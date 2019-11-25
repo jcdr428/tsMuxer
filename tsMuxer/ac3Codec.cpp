@@ -216,7 +216,7 @@ int AC3Codec::parseHeader(uint8_t* buf, uint8_t* end)
             }
         }
     }
-    else 
+    else // AC-3
     {
         m_bsidBase = m_bsid; // id except AC3+ frames
         m_samples = AC3_FRAME_SIZE;
