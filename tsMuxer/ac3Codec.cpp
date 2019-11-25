@@ -163,7 +163,7 @@ int AC3Codec::parseHeader(uint8_t* buf, uint8_t* end)
         return AC3_PARSE_ERROR_BSID;
     
     m_bsid = id;
-    if(m_bsid > 10) 
+    if(m_bsid > 10) // bsid = 16 => EAC3
     {
         unsigned int numblkscod, strmtyp, substreamid;
 
@@ -177,9 +177,9 @@ int AC3Codec::parseHeader(uint8_t* buf, uint8_t* end)
         if (m_frame_size < AC3_HEADER_SIZE)
             return 0; // invalid header size
 
-        int fscod = gbc.getBits( 2);
+        m_fscod = gbc.getBits( 2);
 
-        if (fscod == 3) {
+        if (m_fscod == 3) {
             m_fscod2 = gbc.getBits( 2);
             numblkscod = 3;
             if(m_fscod2 == 3)
@@ -191,15 +191,15 @@ int AC3Codec::parseHeader(uint8_t* buf, uint8_t* end)
             m_sample_rate = ff_ac3_freqs[m_fscod];
         }
 
-        int acmodExt = gbc.getBits( 3);
-        int lfeonExt = gbc.getBit();
+        m_acmod = gbc.getBits( 3);
+        m_lfeon = gbc.getBit();
 
         m_samples = eac3_blocks[numblkscod] * 256;
         m_bit_rateExt = m_frame_size * (m_sample_rate) * 8 / (m_samples);
 
         int bsId = gbc.getBits(5);
 
-        for (int i = 0; i < (acmodExt ? 1 : 2); i++) {
+        for (int i = 0; i < (m_acmod ? 1 : 2); i++) {
             gbc.skipBits(5); // skip dialog normalization
             if (gbc.getBit()) {
                 gbc.skipBits(8); //skip Compression gain word
