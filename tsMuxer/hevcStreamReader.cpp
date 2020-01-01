@@ -8,7 +8,8 @@
 using namespace std;
 
 static const int MAX_SLICE_HEADER = 64;
-int HDR10_metadata[7] = { 1,0,0,0,0,0,0 };
+int V3_flags = 0; // flags : isV3, reserved, 4K, HDR10+, SL-HDR2, DV, HDR10, SDR
+int HDR10_metadata[6] = { 0,0,0,0,0,0 };
 
 HEVCStreamReader::HEVCStreamReader(): 
     MPEGStreamReader(),
@@ -50,7 +51,7 @@ CheckStreamRez HEVCStreamReader::checkStream(uint8_t* buffer, int len)
         if (*nal & 0x80)
             return rez; // invalid nal
         int nalType = (*nal >> 1) & 0x3f;
-	uint8_t* nextNal = NALUnit::findNALWithStartCode(nal, end, true);
+        uint8_t* nextNal = NALUnit::findNALWithStartCode(nal, end, true);
 	
         switch (nalType)
         {
@@ -92,7 +93,7 @@ CheckStreamRez HEVCStreamReader::checkStream(uint8_t* buffer, int len)
                     m_sei = new HevcSeiUnit();
                 if (nal[1] == 1 && !m_sei->isDV) {
                     m_sei->isDV = true;
-                    *HDR10_metadata |= 4; // Dolby Vision flag
+                    V3_flags |= 4; // Dolby Vision flag
                 }
                 break;
             }
@@ -258,16 +259,18 @@ int HEVCStreamReader::intDecodeNAL(uint8_t* buff)
     while (curPos < m_bufEnd)
     {
         int nalType = (*curPos >> 1) & 0x3f;
+
         if (isSlice(nalType)) 
         {
             if (curPos[2] & 0x80) // slice.first_slice
             {
-                if (sliceFound ) { // first slice of next frame
+                if (sliceFound ) { // first slice of next frame: case where there is no non-VCL NAL between the two frames
                     m_lastDecodedPos = prevPos; // next frame started
                     incTimings();
                     return 0;
                 }
-                else { // first slice of current frame
+                else // first slice of current frame
+                {
                     HevcSliceHeader slice;
                     slice.decodeBuffer(curPos, FFMIN(curPos + MAX_SLICE_HEADER, nextNal));
                     rez = slice.deserialize(m_sps, m_pps);
@@ -287,9 +290,9 @@ int HEVCStreamReader::intDecodeNAL(uint8_t* buff)
                 m_lastDecodedPos = prevPos;  // next frame started
                 return 0;
             }
-            
-	    nextNalWithStartCode = nextNal[-4] == 0 ? nextNal - 4 : nextNal - 3;
-		
+
+            nextNalWithStartCode = nextNal[-4] == 0 ? nextNal - 4 : nextNal - 3;
+
             switch(nalType) 
             {
                 case NAL_VPS: 
@@ -328,11 +331,12 @@ int HEVCStreamReader::intDecodeNAL(uint8_t* buff)
                     break;
             }
         }
+
         prevPos = curPos;
         curPos = nextNal;
         nextNal = NALUnit::findNextNAL(curPos, m_bufEnd);
-	
-	if (!m_eof && nextNal == m_bufEnd)
+
+        if (!m_eof && nextNal == m_bufEnd)
             return NOT_ENOUGH_BUFFER;
     }
     if (m_eof) {
