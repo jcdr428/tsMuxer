@@ -92,8 +92,9 @@ DiskType checkBluRayMux(const char* metaFileName, int& autoChapterLen, vector<do
 			}
 
 			if (str.find("--blu-ray-v3") != string::npos)
-				result =  UHD_BLURAY;
-			else if (str.find("--blu-ray") != string::npos)
+				V3_flags |= 0x80; // flag "V3"
+
+			if (str.find("--blu-ray") != string::npos)
 				result =  DT_BLURAY;
 			else if (str.find("--avchd") != string::npos)
 				result =  DT_AVCHD;
@@ -669,7 +670,7 @@ int main(int argc, char** argv)
 			muxerManager.openMetaFile(argv[1]);
 			if (dt == DT_BLURAY && muxerManager.getHevcFound()) {
 				LTRACE(LT_WARN, 2, "HEVC stream detected: changing Blu-Ray version to V3.");
-				dt = UHD_BLURAY;
+				V3_flags |= 0x80; // flag "V3"
 			}
 			string dstFile = unquoteStr(argv[2]);
 
@@ -683,6 +684,7 @@ int main(int argc, char** argv)
 			}
 			if (muxerManager.getTrackCnt() == 0)
 				THROW(ERR_COMMON, "No tracks selected");
+			//freopen("out.txt", "w", stdout); // ajout jcdr
             muxerManager.doMux(dstFile, dt != DT_NONE ? &blurayHelper : 0);
 			if (dt != DT_NONE) 
 			{
