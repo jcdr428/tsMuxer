@@ -962,22 +962,40 @@ void CLPIParser::composeEP_map_for_one_stream_PID(BitStreamWriter& writer, M2TSS
 			writer.putBit(0); //is_angle_change_point[EP_fine_id] 1 bslbf
 			int endCode = 0;
 			if (indexData.m_frameLen > 0) {
-				if (indexData.m_frameLen < 131072)
-					endCode = 1;
-				else if (indexData.m_frameLen < 131072)
-					endCode = 1;
-				else if (indexData.m_frameLen < 262144)
-					endCode = 2;
-				else if (indexData.m_frameLen < 393216)
-					endCode = 3;
-				else if (indexData.m_frameLen < 589824)
-					endCode = 4;
-				else if (indexData.m_frameLen < 917504)
-					endCode = 5;
-				else if (indexData.m_frameLen < 1310720)
-					endCode = 6;
-				else
-					endCode = 7;
+				if (V3_flags & 0x20) { // 4K
+					// The threshold IDR size values for 4K are unknown for the moment
+					// These should be changed once known.
+					if (indexData.m_frameLen < 131072)
+						endCode = 1;
+					else if (indexData.m_frameLen < 262144)
+						endCode = 2;
+					else if (indexData.m_frameLen < 393216)
+						endCode = 3;
+					else if (indexData.m_frameLen < 589824)
+						endCode = 4;
+					else if (indexData.m_frameLen < 917504)
+						endCode = 5;
+					else if (indexData.m_frameLen < 1310720)
+						endCode = 6;
+					else
+						endCode = 7;
+				}
+				else {
+					if (indexData.m_frameLen < 131072)
+						endCode = 1;
+					else if (indexData.m_frameLen < 262144)
+						endCode = 2;
+					else if (indexData.m_frameLen < 393216)
+						endCode = 3;
+					else if (indexData.m_frameLen < 589824)
+						endCode = 4;
+					else if (indexData.m_frameLen < 917504)
+						endCode = 5;
+					else if (indexData.m_frameLen < 1310720)
+						endCode = 6;
+					else
+						endCode = 7;
+				}
 			}
 			writer.putBits(3, endCode); //I_end_position_offset[EP_fine_id] 3 bslbf
 			writer.putBits(11, (itr->first >> 9) % 2048);  //PTS_EP_fine[EP_fine_id] 11 uimsbf
@@ -1565,7 +1583,7 @@ void MPLSParser::composeAppInfoPlayList(BitStreamWriter& writer)
 	writer.putBits(28, 0); //UO_mask_table;
 	writer.putBits(4, (V3_flags ? 15 : 0)); //UO_mask_table;
 	writer.putBit(0); // reserved
-	writer.putBit(V3_flags ? 15 : 0); //UO_mask_table: SecondaryPGStreamNumberChange
+	writer.putBit(V3_flags ? 1 : 0); //UO_mask_table: SecondaryPGStreamNumberChange
 	writer.putBits(30, 0); //UO_mask_table cont;
 	writer.putBit(0); // PlayList_random_access_flag
 	writer.putBit(1); // audio_mix_app_flag. 0 == no secondary audio, 1- allow secondary audio if exist
@@ -2209,7 +2227,7 @@ void MPLSParser::composePlayItem(BitStreamWriter& writer, int playItemNum, std::
 	writer.putBits(28, 0); //UO_mask_table;
 	writer.putBits(4, V3_flags ? 15 : 0); //UO_mask_table;
 	writer.putBit(0); // reserved
-	writer.putBit(V3_flags ? 15 : 0); //UO_mask_table: SecondaryPGStreamNumberChange
+	writer.putBit(V3_flags ? 1 : 0); //UO_mask_table: SecondaryPGStreamNumberChange
 	writer.putBits(30, 0); //UO_mask_table cont;
 
 	writer.putBit(PlayItem_random_access_flag); //1 bslbf
