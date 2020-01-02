@@ -179,8 +179,8 @@ bool BlurayHelper::writeBluRayFiles(bool usedBlackPL, int mplsNum, int blankNum,
             // 4K flag => 66/100 GB Disk, 109 MB/s Recording_Rate
             if (V3_flags & 0x20) bdIndexData[0x94] = 0x51;
             // no HDR10 detected => SDR flag
-            if (V3_flags & 0x1e) V3_flags |= 1;
-           // include 4K/HDR/SDR flags
+            if (!(V3_flags & 0x1e)) V3_flags |= 1;
+           // include HDR/SDR flags
             bdIndexData[0x96] = (V3_flags & 0x1f);
         }
         else { // V2
