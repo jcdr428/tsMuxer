@@ -175,13 +175,13 @@ bool BlurayHelper::writeBluRayFiles(bool usedBlackPL, int mplsNum, int blankNum,
             // UHD data extension
             memcpy(emptyCommand, "\x00\x00\x00\x20\x00\x00\x00\x18\x00\x00\x00\x01"
                 "\x00\x03\x00\x01\x00\x00\x00\x18\x00\x00\x00\x0C"
-                "\x00\x00\x00\x08\x21\x00\x00\x00\x00\x00\x00\x00", 36);
+                "\x00\x00\x00\x08\x20\x00\x00\x00\x00\x00\x00\x00", 36);
             // 4K flag => 66/100 GB Disk, 109 MB/s Recording_Rate
             if (V3_flags & 0x20) bdIndexData[0x94] = 0x51;
             // no HDR10 detected => SDR flag
             if (V3_flags & 0x1e) V3_flags |= 1;
            // include 4K/HDR/SDR flags
-            bdIndexData[0x96] = (V3_flags & 0x3f);
+            bdIndexData[0x96] = (V3_flags & 0x1f);
         }
         else { // V2
             bdMovieObjectData[5] = bdIndexData[5] = '2';
