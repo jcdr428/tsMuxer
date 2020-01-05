@@ -305,6 +305,7 @@ int HEVCStreamReader::intDecodeNAL(uint8_t* buff)
                     rez = m_vps->deserialize();
                     if (rez)
                         return rez;
+                    if (m_vps->num_units_in_tick) updateFPS(m_vps, curPos, nextNalWithStartCode, 0);
                     m_spsPpsFound = true;
                     m_vpsCounter++;
                     m_vpsSizeDiff = 0;
@@ -318,6 +319,7 @@ int HEVCStreamReader::intDecodeNAL(uint8_t* buff)
                     rez = m_sps->deserialize();
                     if (rez)
                         return rez;
+                    updateFPS(m_sps, curPos, nextNalWithStartCode, 0);
                     m_spsPpsFound = true;
                     storeBuffer(m_spsBuffer, curPos, nextNalWithStartCode);
                     break;
