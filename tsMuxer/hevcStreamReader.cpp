@@ -52,7 +52,7 @@ CheckStreamRez HEVCStreamReader::checkStream(uint8_t* buffer, int len)
             return rez; // invalid nal
         int nalType = (*nal >> 1) & 0x3f;
         uint8_t* nextNal = NALUnit::findNALWithStartCode(nal, end, true);
-	
+
         switch (nalType)
         {
             case NAL_VPS: {
@@ -61,7 +61,7 @@ CheckStreamRez HEVCStreamReader::checkStream(uint8_t* buffer, int len)
                 m_vps->decodeBuffer(nal, nextNal);
                 if (m_vps->deserialize())
                     return rez;
-                updateFPS(m_vps, nal, nextNal, 0);
+                if (m_vps->num_units_in_tick) updateFPS(m_vps, nal, nextNal, 0);
                 break;
             }
             case NAL_SPS: {
@@ -70,6 +70,7 @@ CheckStreamRez HEVCStreamReader::checkStream(uint8_t* buffer, int len)
                 m_sps->decodeBuffer(nal, nextNal);
                 if (m_sps->deserialize() != 0)
                     return rez;
+                updateFPS(m_sps, nal, nextNal, 0);
                 break;
             }
             case NAL_PPS: {
@@ -172,8 +173,10 @@ int HEVCStreamReader::getStreamHDR() const
 
 double HEVCStreamReader::getStreamFPS(void * curNalUnit)
 {
-    HevcVpsUnit* vps = (HevcVpsUnit*) curNalUnit;
-    return vps->getFPS();
+    double fps = 0;
+    if (m_vps) fps = m_vps->getFPS();
+    if (fps == 0 && m_sps) fps = m_sps->getFPS();
+    return fps;
 }
 
 bool HEVCStreamReader::isSlice(int nalType) const
@@ -305,7 +308,6 @@ int HEVCStreamReader::intDecodeNAL(uint8_t* buff)
                     m_spsPpsFound = true;
                     m_vpsCounter++;
                     m_vpsSizeDiff = 0;
-                    updateFPS(m_vps, curPos, nextNalWithStartCode, 0);
                     nextNal += m_vpsSizeDiff;
                     storeBuffer(m_vpsBuffer, curPos, nextNalWithStartCode);
                     break;
