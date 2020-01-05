@@ -962,20 +962,18 @@ void CLPIParser::composeEP_map_for_one_stream_PID(BitStreamWriter& writer, M2TSS
 			writer.putBit(0); //is_angle_change_point[EP_fine_id] 1 bslbf
 			int endCode = 0;
 			if (indexData.m_frameLen > 0) {
-				if (V3_flags & 0x20) { // 4K
-					// The threshold IDR size values for 4K are unknown for the moment
-					// These should be changed once known.
-					if (indexData.m_frameLen < 131072)
+				if (V3_flags & 0x20) { // 4K, TR 109 mbps
+					if (indexData.m_frameLen < 786432)
 						endCode = 1;
-					else if (indexData.m_frameLen < 262144)
+					else if (indexData.m_frameLen < 1572864)
 						endCode = 2;
-					else if (indexData.m_frameLen < 393216)
+					else if (indexData.m_frameLen < 2359296)
 						endCode = 3;
-					else if (indexData.m_frameLen < 589824)
+					else if (indexData.m_frameLen < 3145728)
 						endCode = 4;
-					else if (indexData.m_frameLen < 917504)
+					else if (indexData.m_frameLen < 3932160)
 						endCode = 5;
-					else if (indexData.m_frameLen < 1310720)
+					else if (indexData.m_frameLen < 4718592)
 						endCode = 6;
 					else
 						endCode = 7;
