@@ -620,26 +620,12 @@ DetectStreamRez METADemuxer::DetectStreamReader(BufferedReaderManager& readManag
 			if (trackRez.codecInfo.programName == "V_MS/VFW/WVC1" ||
 				trackRez.codecInfo.programName == "V_MPEG-2" || 
 				trackRez.codecInfo.programName == "V_MPEG4/ISO/AVC" ||
-				trackRez.codecInfo.programName == "V_MPEG4/ISO/MVC" ||
+                trackRez.codecInfo.programName == "V_MPEG4/ISO/MVC" ||
 				trackRez.codecInfo.programName == "V_MPEGH/ISO/HEVC"
 				)
-			{
-				size_t frPos = trackRez.streamDescr.find("Frame rate: not found");
-				if (frPos != string::npos) 
-				{
-					double fps = demuxer->getTrackFps(itr->first);
-					if (fps != 0.0) 
-					{
-						trackRez.streamDescr = trackRez.streamDescr.substr(0,frPos);
-						trackRez.streamDescr += "Frame rate: ";
-						trackRez.streamDescr += doubleToStr(fps);
-					}
-				}
-                addTrack(streams, trackRez, true);
-			}
+				addTrack(streams, trackRez, true);
 			else
 				addTrack(streams, trackRez, false);
-			//}
 		}
 		chapters = demuxer->getChapters();
         if (calcDuration)
