@@ -51,8 +51,8 @@ CheckStreamRez HEVCStreamReader::checkStream(uint8_t* buffer, int len)
         if (*nal & 0x80)
             return rez; // invalid nal
         int nalType = (*nal >> 1) & 0x3f;
-	uint8_t* nextNal = NALUnit::findNALWithStartCode(nal, end, true);
-	
+        uint8_t* nextNal = NALUnit::findNALWithStartCode(nal, end, true);
+
         switch (nalType)
         {
             case NAL_VPS: {
@@ -106,7 +106,12 @@ CheckStreamRez HEVCStreamReader::checkStream(uint8_t* buffer, int len)
     if (m_vps && m_sps && m_pps && m_sps->vps_id == m_vps->vps_id && m_pps->sps_id == m_sps->sps_id)
     {
         rez.codecInfo = hevcCodecInfo;
-        rez.streamDescr = m_sps->getDescription() + string(" ") + m_vps->getDescription();
+        rez.streamDescr = m_sps->getDescription();
+        size_t frVpsPos = m_vps->getDescription().find("Frame rate: not found");
+        size_t frSpsPos = m_sps->getDescription().find("Frame rate: not found");
+        if (frSpsPos == string::npos && frVpsPos != string::npos)
+            rez.streamDescr = rez.streamDescr.substr(0, frSpsPos) + string(" ") + m_vps->getDescription();
+        int zer = 1;
     }
 
     return rez;
@@ -264,6 +269,7 @@ int HEVCStreamReader::intDecodeNAL(uint8_t* buff)
     while (curPos < m_bufEnd)
     {
         int nalType = (*curPos >> 1) & 0x3f;
+
         if (isSlice(nalType)) 
         {
             if (curPos[2] & 0x80) // slice.first_slice
@@ -273,7 +279,8 @@ int HEVCStreamReader::intDecodeNAL(uint8_t* buff)
                     incTimings();
                     return 0;
                 }
-                else { // first slice of current frame
+                else // first slice of current frame
+                {
                     HevcSliceHeader slice;
                     slice.decodeBuffer(curPos, FFMIN(curPos + MAX_SLICE_HEADER, nextNal));
                     rez = slice.deserialize(m_sps, m_pps);
@@ -293,9 +300,9 @@ int HEVCStreamReader::intDecodeNAL(uint8_t* buff)
                 m_lastDecodedPos = prevPos;  // next frame started
                 return 0;
             }
-            
-	    nextNalWithStartCode = nextNal[-4] == 0 ? nextNal - 4 : nextNal - 3;
-		
+
+            nextNalWithStartCode = nextNal[-4] == 0 ? nextNal - 4 : nextNal - 3;
+
             switch(nalType) 
             {
                 case NAL_VPS: 
@@ -335,11 +342,12 @@ int HEVCStreamReader::intDecodeNAL(uint8_t* buff)
                     break;
             }
         }
+
         prevPos = curPos;
         curPos = nextNal;
         nextNal = NALUnit::findNextNAL(curPos, m_bufEnd);
-	
-	if (!m_eof && nextNal == m_bufEnd)
+
+        if (!m_eof && nextNal == m_bufEnd)
             return NOT_ENOUGH_BUFFER;
     }
     if (m_eof) {

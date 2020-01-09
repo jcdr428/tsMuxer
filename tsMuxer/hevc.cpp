@@ -242,7 +242,7 @@ double HevcVpsUnit::getFPS() const
 
 string HevcVpsUnit::getDescription() const
 {
-    string rez("VPS Frame rate: ");
+    string rez("Frame rate: ");
     double fps = getFPS();
     if (fps != 0)
         rez +=  doubleToStr(fps);
@@ -771,13 +771,13 @@ double HevcSpsUnit::getFPS() const
 
 string HevcSpsUnit::getDescription() const
 {
-    double fps = getFPS();
     string result = getProfileString();
-    result += "SPS Frame rate: ";
-    result += (fps ? doubleToStr(fps) : string("not found"));
     result += string(" Resolution: ") + int32ToStr(pic_width_in_luma_samples) + string(":") + int32ToStr(pic_height_in_luma_samples);
     result += (interlaced_source_flag ? string("i") : string("p"));
 
+    double fps = getFPS();
+    result += "Frame rate: ";
+    result += (fps ? doubleToStr(fps) : string("not found"));
     return result;
 }
 
