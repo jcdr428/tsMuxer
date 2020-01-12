@@ -27,5 +27,5 @@ jobs:
     - uses: actions/upload-artifact@master
       with:
          name: tsMuxer
-         path: bin/x64
+         path: bin/w64
       name: upload-artefact
