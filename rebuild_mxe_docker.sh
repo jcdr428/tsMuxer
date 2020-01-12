@@ -9,4 +9,8 @@ make
 cp tsMuxer/tsmuxer.exe ../bin/tsMuxeR.exe
 cd ..
 rm -rf build
-ls ./bin/tsMuxeR.exe
+
+mkdir ./bin/w64
+mv ./bin/tsMuxeR.exe ./bin/w64/tsMuxeR.exe
+zip -jr ./bin/w64.zip ./bin/w64
+ls ./bin/w64.zip

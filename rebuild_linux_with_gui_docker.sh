@@ -42,4 +42,4 @@ cd ../..
 rm -rf ./bin/lnx/AppDir
 
 zip -r ./bin/lnx.zip ./bin/lnx
-ls ./bin/lnx/tsMuxeR && ls ./bin/lnx/tsMuxerGUI-*-x86_64.AppImage && ls ./bin/lnx.zip
+ls ./bin/lnx.zip
