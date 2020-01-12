@@ -9,5 +9,4 @@ rm -rf build
 mkdir ./bin/lnx
 mv ./bin/tsMuxeR ./bin/lnx/tsMuxeR
 
-zip -r ./bin/lnx.zip ./bin/lnx
-ls ./bin/lnx.zip
+ls ./bin/lnx/tsMuxeR

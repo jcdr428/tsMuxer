@@ -17,5 +17,5 @@ rm -rf build
 mkdir ./bin/w64
 mv ./bin/tsMuxeR.exe ./bin/w64/tsMuxeR.exe
 mv ./bin/tsMuxerGUI.exe ./bin/w64/tsMuxerGUI.exe
-zip -jr ./bin/w64.zip ./bin/w64
-ls ./bin/w64.zip
+
+ls ./bin/w64/tsMuxeR.exe && ./bin/w64/tsMuxerGUI.exe
