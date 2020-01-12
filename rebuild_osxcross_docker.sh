@@ -11,4 +11,6 @@ cp tsMuxer/tsmuxer ../bin/tsMuxeR
 cd ..
 rm -rf build
 
-ls ./bin/tsMuxeR
+mkdir ./bin/mac
+mv ./bin/tsMuxeR ./bin/mac/tsMuxeR
+ls ./bin/mac/tsMuxeR
