@@ -444,7 +444,7 @@ void RenderGlyph(FT_Library& library, wchar_t ch, FT_Face& face, int size, const
             int imgWidth = rect.Width(), imgHeight = rect.Height(), imgSize = imgWidth * imgHeight;
 
             top += (face->size->metrics.ascender >> 6) - bearingY;
-            left += bearingX;
+            //left += bearingX;
 
             // Loop over the outline spans and just draw them into the image.
             for (Spans::iterator s = outlineSpansOut.begin(); s != outlineSpansOut.end(); ++s)
