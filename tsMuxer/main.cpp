@@ -622,32 +622,17 @@ int main(int argc, char** argv)
 
                     string itemName;
                     if (mode3D)
-                        itemName = string("SSIF") + getDirSeparator() + item.fileName[0] + ".ssif ";
+                        itemName = streamDir + string("SSIF") + getDirSeparator() + item.fileName[0] + ".ssif";
                     else
-                        itemName = item.fileName[0] + mediaExt + " ";  // 2d mode
+                        itemName = streamDir + item.fileName[0] + mediaExt;  // 2d mode
 
-                    if (item.fileName.size() > 1)
-                    {
-                        if (item.fileName.size() > 2)
-                            itemName += "angles = ";
-                        else
-                            itemName += "angle = ";
-
-                        for (int angle = 1; angle < item.fileName.size(); angle++)
-                        {
-                            if (mode3D)
-                                itemName += string("SSIF") + getDirSeparator() + item.fileName[angle] + ".ssif ";
-                            else
-                                itemName += item.fileName[angle] + mediaExt + " ";  // 2d mode
-                        }
-                    }
                     LTRACE(LT_INFO, 2, "");
 #ifdef _WIN32
                     char buffer[1024 * 16];
                     CharToOemA(itemName.c_str(), buffer);
-                    LTRACE(LT_INFO, 2, "File #" << strPadLeft(int32ToStr(i), 5, '0') << " name = " << buffer);
+                    LTRACE(LT_INFO, 2, "File #" << strPadLeft(int32ToStr(i), 5, '0') << " name=" << buffer);
 #else
-                    LTRACE(LT_INFO, 2, "File #" << strPadLeft(int32ToStr(i), 5, '0') << " name = " << itemName);
+                    LTRACE(LT_INFO, 2, "File #" << strPadLeft(int32ToStr(i), 5, '0') << " name=" << itemName);
 #endif
                     if (!mplsParser.m_playItems.empty())
                         LTRACE(LT_INFO, 2, "Start time: " << floatToTime(prevFileOffset / 45000.0));
