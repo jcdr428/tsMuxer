@@ -589,7 +589,7 @@ int main(int argc, char** argv)
                 if (mplsParser.m_playItems.size() > 0)
                 {
                     MPLSPlayItem& item = mplsParser.m_playItems[0];
-                    string itemName = streamDir + item.fileName + mediaExt;
+                    string itemName = streamDir + item.fileName[0] + mediaExt;
                     if (fileExists(itemName))
                     {
                         if (mode3D && !mplsParser.m_mvcFiles.empty())
@@ -607,7 +607,7 @@ int main(int argc, char** argv)
                     }
                     if (switchToSsif)
                     {
-                        string ssifName = streamDir + string("SSIF") + getDirSeparator() + item.fileName + ssifExt;
+                        string ssifName = streamDir + string("SSIF") + getDirSeparator() + item.fileName[0] + ssifExt;
                         if (fileExists(ssifName))
                             itemName = ssifName;  // if m2ts file absent then swith to ssif
                     }
@@ -622,23 +622,39 @@ int main(int argc, char** argv)
 
                     string itemName;
                     if (mode3D)
-                        itemName = streamDir + string("SSIF") + getDirSeparator() + item.fileName + ".ssif";
+                        itemName = string("SSIF") + getDirSeparator() + item.fileName[0] + ".ssif ";
                     else
-                        itemName = streamDir + item.fileName + mediaExt;  // 2d mode
+                        itemName = item.fileName[0] + mediaExt + " ";  // 2d mode
 
+                    if (item.fileName.size() > 1)
+                    {
+                        if (item.fileName.size() > 2)
+                            itemName += "angles = ";
+                        else
+                            itemName += "angle = ";
+
+                        for (int angle = 1; angle < item.fileName.size(); angle++)
+                        {
+                            if (mode3D)
+                                itemName += string("SSIF") + getDirSeparator() + item.fileName[angle] + ".ssif ";
+                            else
+                                itemName += item.fileName[angle] + mediaExt + " ";  // 2d mode
+                        }
+                    }
                     LTRACE(LT_INFO, 2, "");
-
 #ifdef _WIN32
                     char buffer[1024 * 16];
                     CharToOemA(itemName.c_str(), buffer);
-                    LTRACE(LT_INFO, 2, "File #" << strPadLeft(int32ToStr(i), 5, '0') << " name=" << buffer);
+                    LTRACE(LT_INFO, 2, "File #" << strPadLeft(int32ToStr(i), 5, '0') << " name = " << buffer);
 #else
-                    LTRACE(LT_INFO, 2, "File #" << strPadLeft(int32ToStr(i), 5, '0') << " name=" << itemName);
+                    LTRACE(LT_INFO, 2, "File #" << strPadLeft(int32ToStr(i), 5, '0') << " name = " << itemName);
 #endif
+                    if (!mplsParser.m_playItems.empty())
+                        LTRACE(LT_INFO, 2, "Start time: " << floatToTime(prevFileOffset / 45000.0));
                     LTRACE(LT_INFO, 2,
-                           "Duration: " << floatToTime(
-                               (mplsParser.m_playItems[i].OUT_time - mplsParser.m_playItems[i].IN_time) /
-                               (double)45000.0));
+                           "Duration:   "
+                               << floatToTime((mplsParser.m_playItems[i].OUT_time - mplsParser.m_playItems[i].IN_time) /
+                                              (double)45000.0));
                     if (mplsParser.isDependStreamExist)
                     {
                         if (mplsParser.mvc_base_view_r)
@@ -650,8 +666,6 @@ int main(int argc, char** argv)
                             LTRACE(LT_INFO, 2, "Base view: left-eye");
                         }
                     }
-                    if (!mplsParser.m_playItems.empty())
-                        LTRACE(LT_INFO, 2, "start-time: " << mplsParser.m_playItems[0].IN_time);
                     int marksPerFile = 0;
                     for (; markIndex < mplsParser.m_marks.size(); markIndex++)
                     {
@@ -663,10 +677,10 @@ int main(int argc, char** argv)
                         {
                             if (marksPerFile > 0)
                                 LTRACE(LT_INFO, 2, "");
-                            LTRACE2(LT_INFO, "Marks: ");
+                            LTRACE2(LT_INFO, "Marks:      ");
                         }
                         marksPerFile++;
-                        LTRACE2(LT_INFO, floatToTime(time / 45000.0) << " ");
+                        LTRACE2(LT_INFO, floatToTime(time / 45000.0) << "  ");
                     }
                     if (marksPerFile > 0)
                         LTRACE(LT_INFO, 2, "");
