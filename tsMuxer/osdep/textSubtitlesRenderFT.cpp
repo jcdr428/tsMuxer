@@ -444,7 +444,7 @@ void RenderGlyph(FT_Library& library, wchar_t ch, FT_Face& face, int size, const
             int imgWidth = rect.Width(), imgHeight = rect.Height(), imgSize = imgWidth * imgHeight;
 
             top += (face->size->metrics.ascender >> 6) - bearingY;
-            left += bearingX;
+            //left += bearingX;
 
             // Loop over the outline spans and just draw them into the image.
             for (Spans::iterator s = outlineSpansOut.begin(); s != outlineSpansOut.end(); ++s)
@@ -452,7 +452,7 @@ void RenderGlyph(FT_Library& library, wchar_t ch, FT_Face& face, int size, const
                 for (int w = 0; w < s->width; ++w)
                 {
                     int y = imgHeight - 1 - (s->y - rect.ymin) + top;
-                    int x = s->x - rect.xmin + w + left;
+                    int x = s->x + w + left;
                     if (y >= 0 && y < height && x >= 0 && x < width)
                     {
                         Pixel32* dst = (Pixel32*)dstData + y * width + x;
@@ -469,7 +469,7 @@ void RenderGlyph(FT_Library& library, wchar_t ch, FT_Face& face, int size, const
                 for (int w = 0; w < s->width; ++w)
                 {
                     int y = imgHeight - 1 - (s->y - rect.ymin) + top;
-                    int x = s->x - rect.xmin + w + left;
+                    int x = s->x + w + left;
                     if (y >= 0 && y < height && x >= 0 && x < width)
                     {
                         Pixel32* dst = (Pixel32*)dstData + y * width + x;
@@ -484,7 +484,7 @@ void RenderGlyph(FT_Library& library, wchar_t ch, FT_Face& face, int size, const
                 for (int w = 0; w < s->width; ++w)
                 {
                     int y = imgHeight - 1 - (s->y - rect.ymin) + top;
-                    int x = s->x - rect.xmin + w + left;
+                    int x = s->x + w + left;
 
                     if (y >= 0 && y < height && x >= 0 && x < width)
                     {
