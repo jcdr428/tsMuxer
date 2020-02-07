@@ -155,12 +155,15 @@ int HEVCStreamReader::getTSDescriptor(uint8_t* dstBuff)
             uint8_t nalType = (*nal >> 1) & 0x3f;
             if (nalType == NAL_SPS)
             {
+                uint8_t tmpBuffer[512];
+                int toDecode = FFMIN(sizeof(tmpBuffer) - 8, nextNal - nal);
+                int decodedLen = NALUnit::decodeNAL(nal, nal + toDecode, tmpBuffer, sizeof(tmpBuffer));
                 *dstBuff++ = HEVC_DESCRIPTOR_TAG;
-                *dstBuff++ = 13;  // descriptor length
-                memcpy(dstBuff, nal, 12);
+                *dstBuff++ = 13; // descriptor length
+                memcpy(dstBuff, tmpBuffer + 3, 12);
                 dstBuff += 12;
                 // temporal_layer_subset, HEVC_still_present, HEVC_24hr_picture_present, sub_pic_hrd_params_not_present
-                *dstBuff = 0x1b;
+                *dstBuff = 0x1c;
                 if (V3_flags & 0x1e)
                     *dstBuff |= 3;
 
