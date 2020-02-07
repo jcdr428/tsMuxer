@@ -726,7 +726,7 @@ int TSMuxer::getFirstFileNum() const
 std::string TSMuxer::getNextName(const std::string curName)
 {
     std::string result = curName;
-    if (V3_flags & 0x40) // Blu-ray mode
+    if (V3_flags & 0x40)  // Blu-ray mode
     {
         string fileExt = extractFileExt(m_origFileName);
         string fileName = extractFileName(m_origFileName);
