@@ -149,13 +149,14 @@ int HEVCStreamReader::getTSDescriptor(uint8_t* dstBuff)
         return 10;
     }
     else
-        for (uint8_t* nal = NALUnit::findNextNAL(m_buffer, m_bufEnd); nal < m_bufEnd - 4; nal = NALUnit::findNextNAL(nal, m_bufEnd))
+        for (uint8_t* nal = NALUnit::findNextNAL(m_buffer, m_bufEnd); nal < m_bufEnd - 4;
+             nal = NALUnit::findNextNAL(nal, m_bufEnd))
         {
             uint8_t nalType = (*nal >> 1) & 0x3f;
             if (nalType == NAL_SPS)
             {
                 *dstBuff++ = HEVC_DESCRIPTOR_TAG;
-                *dstBuff++ = 13; // descriptor length
+                *dstBuff++ = 13;  // descriptor length
                 memcpy(dstBuff, nal, 12);
                 dstBuff += 12;
                 // temporal_layer_subset, HEVC_still_present, HEVC_24hr_picture_present, sub_pic_hrd_params_not_present
