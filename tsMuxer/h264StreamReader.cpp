@@ -3,11 +3,11 @@
 #include <fs/systemlog.h>
 
 #include "avCodecs.h"
+#include "hevc.h"
 #include "math.h"
 #include "tsPacket.h"
 #include "vodCoreException.h"
 #include "vod_common.h"
-#include "hevc.h"
 
 using namespace std;
 
