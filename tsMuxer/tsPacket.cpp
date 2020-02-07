@@ -2175,7 +2175,7 @@ void MPLSParser::parsePlayItem(BitStreamReader& reader, int PlayItem_id)
     char clip_Information_file_name[6];
     char clip_codec_identifier[5];
     CLPIStreamInfo::readString(clip_Information_file_name, reader, 5);
-    newItem.fileName = clip_Information_file_name;
+    newItem.fileName.push_back(clip_Information_file_name);
     CLPIStreamInfo::readString(clip_codec_identifier, reader, 4);
     reader.skipBits(11);  // reserved_for_future_use 11 bslbf
     is_multi_angle = reader.getBit();
@@ -2184,7 +2184,6 @@ void MPLSParser::parsePlayItem(BitStreamReader& reader, int PlayItem_id)
 
     newItem.IN_time = reader.getBits(32);   // 32 uimsbf
     newItem.OUT_time = reader.getBits(32);  // 32 uimsbf
-    m_playItems.push_back(newItem);
 
     UO_mask_table(reader);
     PlayItem_random_access_flag = reader.getBit();  // 1 bslbf
@@ -2208,10 +2207,12 @@ void MPLSParser::parsePlayItem(BitStreamReader& reader, int PlayItem_id)
              angle_id < number_of_angles; angle_id++)
         {
             CLPIStreamInfo::readString(clip_Information_file_name, reader, 5);  // 8*5 bslbf
+            newItem.fileName.push_back(clip_Information_file_name);
             CLPIStreamInfo::readString(clip_codec_identifier, reader, 4);       // 8*4 bslbf
             ref_to_STC_id = reader.getBits(8);                                  // 8 uimsbf
         }
     }
+    m_playItems.push_back(newItem);
     STN_table(reader, PlayItem_id);
 }
 
