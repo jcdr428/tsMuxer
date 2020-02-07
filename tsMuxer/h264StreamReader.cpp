@@ -455,8 +455,8 @@ int H264StreamReader::getTSDescriptor(uint8_t* dstBuff)
         dstBuff += 5;
 
         int video_format, frame_rate_index, aspect_ratio_index;
-        M2TSStreamInfo::blurayStreamParams(getFPS(), getInterlaced(), getStreamWidth(), getStreamHeight(), getStreamAR(),
-            &video_format, &frame_rate_index, &aspect_ratio_index);
+        M2TSStreamInfo::blurayStreamParams(getFPS(), getInterlaced(), getStreamWidth(), getStreamHeight(),
+                                           getStreamAR(), &video_format, &frame_rate_index, &aspect_ratio_index);
 
         *dstBuff++ = !m_mvcSubStream ? 0x1b : 0x20;
         *dstBuff++ = (video_format << 4) + frame_rate_index;
@@ -464,22 +464,24 @@ int H264StreamReader::getTSDescriptor(uint8_t* dstBuff)
 
         return 10;
     }
-    else for (uint8_t* nal = NALUnit::findNextNAL(m_buffer, m_bufEnd); nal < m_bufEnd - 4; nal = NALUnit::findNextNAL(nal, m_bufEnd))
-    {
-        uint8_t nalType = *nal & 0x1f;
-        if (nalType == nuSPS || nalType == nuSubSPS)
+    else
+        for (uint8_t* nal = NALUnit::findNextNAL(m_buffer, m_bufEnd); nal < m_bufEnd - 4;
+             nal = NALUnit::findNextNAL(nal, m_bufEnd))
         {
-            processSPS(nal);
-            dstBuff[0] = H264_DESCRIPTOR_TAG;
-            dstBuff[1] = 4;
-            dstBuff[2] = nal[1]; // profile
-            dstBuff[3] = nal[2]; // flags
-            dstBuff[4] = m_forcedLevel == 0 ? nal[3] : m_forcedLevel; // level
-            dstBuff[5] = 0xbf; // still present + avc_24_hour flag, Frame_Packing_SEI_not_present_flag
+            uint8_t nalType = *nal & 0x1f;
+            if (nalType == nuSPS || nalType == nuSubSPS)
+            {
+                processSPS(nal);
+                dstBuff[0] = H264_DESCRIPTOR_TAG;
+                dstBuff[1] = 4;
+                dstBuff[2] = nal[1]; // profile
+                dstBuff[3] = nal[2]; // flags
+                dstBuff[4] = m_forcedLevel == 0 ? nal[3] : m_forcedLevel; // level
+                dstBuff[5] = 0xbf; // still present + avc_24_hour flag, Frame_Packing_SEI_not_present_flag
 
-            return 6;
+                return 6;
+            }
         }
-    }
 }
 
 void H264StreamReader::updateStreamFps(void* nalUnit, uint8_t* buff, uint8_t* nextNal, int oldSpsLen)
