@@ -2208,8 +2208,8 @@ void MPLSParser::parsePlayItem(BitStreamReader& reader, int PlayItem_id)
         {
             CLPIStreamInfo::readString(clip_Information_file_name, reader, 5);  // 8*5 bslbf
             newItem.fileName.push_back(clip_Information_file_name);
-            CLPIStreamInfo::readString(clip_codec_identifier, reader, 4);       // 8*4 bslbf
-            ref_to_STC_id = reader.getBits(8);                                  // 8 uimsbf
+            CLPIStreamInfo::readString(clip_codec_identifier, reader, 4);  // 8*4 bslbf
+            ref_to_STC_id = reader.getBits(8);                             // 8 uimsbf
         }
     }
     m_playItems.push_back(newItem);
