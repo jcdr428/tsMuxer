@@ -153,6 +153,8 @@ int HEVCStreamReader::getTSDescriptor(uint8_t* dstBuff)
              nal = NALUnit::findNextNAL(nal, m_bufEnd))
         {
             uint8_t nalType = (*nal >> 1) & 0x3f;
+            uint8_t* nextNal = NALUnit::findNALWithStartCode(nal, m_bufEnd, true);
+
             if (nalType == NAL_SPS)
             {
                 uint8_t tmpBuffer[512];
