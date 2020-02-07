@@ -300,9 +300,9 @@ TsMuxerWindow::TsMuxerWindow()
         ui->listViewFont->item(i, 0)->setFlags(ui->listViewFont->item(i, 0)->flags() & (~Qt::ItemIsEditable));
         ui->listViewFont->item(i, 1)->setFlags(ui->listViewFont->item(i, 0)->flags() & (~Qt::ItemIsEditable));
     }
-    const auto comboBoxIndexChanged = QOverload<int>::of(&QComboBox::currentIndexChanged);
-    const auto spinBoxValueChanged = QOverload<int>::of(&QSpinBox::valueChanged);
-    const auto doubleSpinBoxValueChanged = QOverload<double>::of(&QDoubleSpinBox::valueChanged);
+    void (QComboBox::*comboBoxIndexChanged)(int) = &QComboBox::currentIndexChanged;
+    void (QSpinBox::*spinBoxValueChanged)(int) = &QSpinBox::valueChanged;
+    void (QDoubleSpinBox::*doubleSpinBoxValueChanged)(double) = &QDoubleSpinBox::valueChanged;
     connect(&opacityTimer, &QTimer::timeout, this, &TsMuxerWindow::onOpacityTimer);
     connect(ui->trackLV, &QTableWidget::itemSelectionChanged, this, &TsMuxerWindow::trackLVItemSelectionChanged);
     connect(ui->trackLV, &QTableWidget::itemChanged, this, &TsMuxerWindow::trackLVItemChanged);
@@ -389,9 +389,10 @@ TsMuxerWindow::TsMuxerWindow()
 
     connect(&proc, &QProcess::readyReadStandardOutput, this, &TsMuxerWindow::readFromStdout);
     connect(&proc, &QProcess::readyReadStandardError, this, &TsMuxerWindow::readFromStderr);
-    connect(&proc, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this,
-            &TsMuxerWindow::onProcessFinished);
-    connect(&proc, QOverload<QProcess::ProcessError>::of(&QProcess::error), this, &TsMuxerWindow::onProcessError);
+    void (QProcess::*processFinished)(int, QProcess::ExitStatus) = &QProcess::finished;
+    connect(&proc, processFinished, this, &TsMuxerWindow::onProcessFinished);
+    void (QProcess::*processError)(QProcess::ProcessError) = &QProcess::error;
+    connect(&proc, processError, this, &TsMuxerWindow::onProcessError);
 
     ui->DiskLabel->setVisible(false);
     ui->DiskLabelEdit->setVisible(false);
@@ -873,6 +874,7 @@ void TsMuxerWindow::trackLVItemSelectionChanged()
             ui->dtsDwnConvert->setEnabled(codecInfo->displayName == "DTS-HD" || codecInfo->displayName == "TRUE-HD" ||
                                           codecInfo->displayName == "E-AC3 (DD+)");
             ui->secondaryCheckBox->setEnabled(codecInfo->descr.contains("(DTS Express)") ||
+                                              codecInfo->descr.contains("(DTS Express 24bit)") ||
                                               codecInfo->displayName == "E-AC3 (DD+)");
 
             if (!ui->secondaryCheckBox->isEnabled())
@@ -1174,7 +1176,7 @@ void splitLines(const QString &str, QList<QString> &strList)
 
 void TsMuxerWindow::addLines(const QByteArray &arr, QList<QString> &outList, bool isError)
 {
-    QString str = QString::fromLocal8Bit(arr);
+    QString str = QString::fromUtf8(arr);
     QList<QString> strList;
     splitLines(str, strList);
     QString text;
@@ -2396,7 +2398,7 @@ bool TsMuxerWindow::saveMetaFile(const QString &metaName)
         msgBox.exec();
         return false;
     }
-    QByteArray metaText = ui->memoMeta->toPlainText().toLocal8Bit();
+    QByteArray metaText = ui->memoMeta->toPlainText().toUtf8();
     file.write(metaText);
     file.close();
     return true;

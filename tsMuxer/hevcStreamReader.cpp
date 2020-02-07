@@ -10,7 +10,9 @@
 using namespace std;
 
 static const int MAX_SLICE_HEADER = 64;
-int V3_flags = 0;  // flags : isV3, reserved, 4K, HDR10+, SL-HDR2, DV, HDR10, SDR
+const static int HEVC_DESCRIPTOR_TAG = 0x38;
+
+int V3_flags = 0;  // flags : V3, BlurayMode, 4K, HDR10+, SL-HDR2, DV, HDR10, SDR
 int HDR10_metadata[6] = {0, 0, 0, 0, 0, 0};
 
 HEVCStreamReader::HEVCStreamReader()
@@ -129,21 +131,42 @@ int HEVCStreamReader::getTSDescriptor(uint8_t* dstBuff)
     {
         checkStream(m_buffer, m_bufEnd - m_buffer);
     }
+    if (V3_flags & 0x40)  // Blu_ray mode
+    {
+        // put 'HDMV' registration descriptor
+        *dstBuff++ = 0x05;  // registration descriptor tag
+        *dstBuff++ = 8;     // descriptor length
+        memcpy(dstBuff, "HDMV\xff\x24", 6);
+        dstBuff += 6;
 
-    // put 'HDMV' registration descriptor
-    *dstBuff++ = 0x05;  // registration descriptor tag
-    *dstBuff++ = 8;     // descriptor length
-    memcpy(dstBuff, "HDMV\xff\x24", 6);
-    dstBuff += 6;
+        int video_format, frame_rate_index, aspect_ratio_index;
+        M2TSStreamInfo::blurayStreamParams(getFPS(), getInterlaced(), getStreamWidth(), getStreamHeight(),
+                                           getStreamAR(), &video_format, &frame_rate_index, &aspect_ratio_index);
 
-    int video_format, frame_rate_index, aspect_ratio_index;
-    M2TSStreamInfo::blurayStreamParams(getFPS(), getInterlaced(), getStreamWidth(), getStreamHeight(), getStreamAR(),
-                                       &video_format, &frame_rate_index, &aspect_ratio_index);
+        *dstBuff++ = (video_format << 4) + frame_rate_index;
+        *dstBuff++ = (aspect_ratio_index << 4) + 0xf;
 
-    *dstBuff++ = (video_format << 4) + frame_rate_index;
-    *dstBuff++ = (aspect_ratio_index << 4) + 0xf;
+        return 10;
+    }
+    else
+        for (uint8_t* nal = NALUnit::findNextNAL(m_buffer, m_bufEnd); nal < m_bufEnd - 4;
+             nal = NALUnit::findNextNAL(nal, m_bufEnd))
+        {
+            uint8_t nalType = (*nal >> 1) & 0x3f;
+            if (nalType == NAL_SPS)
+            {
+                *dstBuff++ = HEVC_DESCRIPTOR_TAG;
+                *dstBuff++ = 13;  // descriptor length
+                memcpy(dstBuff, nal, 12);
+                dstBuff += 12;
+                // temporal_layer_subset, HEVC_still_present, HEVC_24hr_picture_present, sub_pic_hrd_params_not_present
+                *dstBuff = 0x1b;
+                if (V3_flags & 0x1e)
+                    *dstBuff |= 3;
 
-    return 10;
+                return 15;
+            }
+        }
 }
 
 void HEVCStreamReader::updateStreamFps(void* nalUnit, uint8_t* buff, uint8_t* nextNal, int)

@@ -488,3 +488,43 @@ uint32_t random32()
     static std::minstd_rand raand(dev());
     return static_cast<std::uint32_t>(raand());
 }
+
+#ifdef _WIN32
+#include <windows.h>
+
+std::vector<wchar_t> toWide(const std::string& utf8Str) { return toWide(utf8Str.c_str(), utf8Str.size()); }
+
+std::vector<wchar_t> toWide(const char* utf8Str, int sz)
+{
+    auto requiredSiz = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, utf8Str, sz, nullptr, 0);
+    UINT codePage;
+    if (requiredSiz != 0)
+    {
+        codePage = CP_UTF8;
+    }
+    else
+    {
+        /* utf8Str is not a valid UTF-8 string. try converting it according to the currently active code page in order
+         * to keep compatibility with meta files saved by older versions of the GUI which put the file name through
+         * QString::toLocal8Bit, which uses the ACP on Windows. */
+        codePage = CP_ACP;
+        requiredSiz = MultiByteToWideChar(codePage, 0, utf8Str, sz, nullptr, 0);
+    }
+    std::vector<wchar_t> multiByteBuf(static_cast<std::size_t>(requiredSiz));
+    MultiByteToWideChar(codePage, 0, utf8Str, sz, multiByteBuf.data(), requiredSiz);
+    if (multiByteBuf.empty() || multiByteBuf.back() != 0)
+    {
+        multiByteBuf.push_back(0);
+    }
+    return multiByteBuf;
+}
+
+std::string toUtf8(const wchar_t* wideStr)
+{
+    auto needed = WideCharToMultiByte(CP_UTF8, 0, wideStr, -1, nullptr, 0, nullptr, nullptr);
+    needed--;  // includes terminating null byte, needless when returning a std::string.
+    std::string s(static_cast<std::size_t>(needed), 0);
+    WideCharToMultiByte(CP_UTF8, 0, wideStr, -1, &s[0], needed, nullptr, nullptr);
+    return s;
+}
+#endif

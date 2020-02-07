@@ -354,7 +354,8 @@ construct a meta file. When running with two arguments, tsMuxeR starts the\n\
 muxing or demuxing process.\n\
 \n\
 Meta file format:\n\
-File MUST have the .meta extension. This file defines files you want to multiplex.\n\
+File MUST have the .meta extension and be encoded in UTF-8 (but see README.md).\n\
+This file defines the files you want to multiplex.\n\
 The first line of a meta file contains additional parameters that apply to all tracks.\n\
 In this case the first line should begin with the word MUXOPT.\n\
 \n\
@@ -547,8 +548,29 @@ All parameters in this group start with two dashes:\n\
     LTRACE(LT_INFO, 2, help);
 }
 
+#ifdef _WIN32
+#include <shellapi.h>
+#endif
+
 int main(int argc, char** argv)
 {
+#ifdef _WIN32
+    auto argvWide = CommandLineToArgvW(GetCommandLineW(), &argc);
+    std::vector<std::string> argv_utf8;
+    argv_utf8.reserve(static_cast<std::size_t>(argc));
+    for (int i = 0; i < argc; ++i)
+    {
+        argv_utf8.emplace_back(toUtf8(argvWide[i]));
+    }
+    LocalFree(argvWide);
+    std::vector<char*> argv_vec;
+    argv_vec.reserve(argv_utf8.size());
+    for (auto&& s : argv_utf8)
+    {
+        argv_vec.push_back(&s[0]);
+    }
+    argv = &argv_vec[0];
+#endif
     LTRACE(LT_INFO, 2, "tsMuxeR version " TSMUXER_VERSION << ". github.com/justdan96/tsMuxer");
     int firstMplsOffset = 0;
     int firstM2tsOffset = 0;
