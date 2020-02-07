@@ -87,7 +87,6 @@ class MuxerManager
     bool m_mvcBaseViewR;
     int64_t m_ptsOffset;
     int m_extraIsoBlocks;
-    bool m_bluRayMode;
     bool m_demuxMode;
 };
 
