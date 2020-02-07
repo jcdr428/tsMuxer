@@ -474,10 +474,10 @@ int H264StreamReader::getTSDescriptor(uint8_t* dstBuff)
                 processSPS(nal);
                 dstBuff[0] = H264_DESCRIPTOR_TAG;
                 dstBuff[1] = 4;
-                dstBuff[2] = nal[1]; // profile
-                dstBuff[3] = nal[2]; // flags
-                dstBuff[4] = m_forcedLevel == 0 ? nal[3] : m_forcedLevel; // level
-                dstBuff[5] = 0xbf; // still present + avc_24_hour flag, Frame_Packing_SEI_not_present_flag
+                dstBuff[2] = nal[1];                                       // profile
+                dstBuff[3] = nal[2];                                       // flags
+                dstBuff[4] = m_forcedLevel == 0 ? nal[3] : m_forcedLevel;  // level
+                dstBuff[5] = 0xbf;  // still present, avc_24_hour flag, Frame_Packing_SEI_not_present_flag
 
                 return 6;
             }
