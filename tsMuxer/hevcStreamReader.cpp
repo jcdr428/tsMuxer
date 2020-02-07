@@ -159,7 +159,7 @@ int HEVCStreamReader::getTSDescriptor(uint8_t* dstBuff)
                 int toDecode = FFMIN(sizeof(tmpBuffer) - 8, nextNal - nal);
                 int decodedLen = NALUnit::decodeNAL(nal, nal + toDecode, tmpBuffer, sizeof(tmpBuffer));
                 *dstBuff++ = HEVC_DESCRIPTOR_TAG;
-                *dstBuff++ = 13; // descriptor length
+                *dstBuff++ = 13;  // descriptor length
                 memcpy(dstBuff, tmpBuffer + 3, 12);
                 dstBuff += 12;
                 // temporal_layer_subset, HEVC_still_present, HEVC_24hr_picture_present, sub_pic_hrd_params_not_present
