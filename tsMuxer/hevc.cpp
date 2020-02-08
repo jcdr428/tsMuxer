@@ -2,6 +2,8 @@
 
 #include <fs/systemlog.h>
 
+#include <algorithm>
+
 #include "vodCoreException.h"
 #include "vod_common.h"
 
@@ -360,9 +362,9 @@ void HevcSpsUnit::vui_parameters()
         bool colour_description_present_flag = m_reader.getBit();
         if (colour_description_present_flag)
         {
-            m_reader.skipBits(8);  // colour_primaries u(8)
-            m_reader.skipBits(8);  // transfer_characteristics u(8)
-            m_reader.skipBits(8);  // matrix_coeffs u(8)
+            colour_primaries = m_reader.getBits(8);
+            transfer_characteristics = m_reader.getBits(8);
+            matrix_coeffs = m_reader.getBits(8);
         }
     }
 
@@ -880,8 +882,9 @@ int HevcSeiUnit::deserialize()
             {
                 int maxCLL = m_reader.getBits(16);
                 int maxFALL = m_reader.getBits(16);
-                if (maxCLL > (HDR10_metadata[5] >> 16) || maxFALL > (HDR10_metadata[5] & 0x00ff))
-                    HDR10_metadata[5] = (maxCLL << 16) + maxFALL;
+                maxCLL = (std::max)(maxCLL, HDR10_metadata[5] >> 16);
+                maxFALL = (std::max)(maxFALL, HDR10_metadata[5] & 0x0000ffff);
+                HDR10_metadata[5] = (maxCLL << 16) + maxFALL;
             }
             else if (payloadType == 4 && !isHDR10plus)
             {                           // HDR10Plus Metadata
