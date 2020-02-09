@@ -51,7 +51,6 @@ MuxerManager::MuxerManager(const BufferedReaderManager& readManager, AbstractMux
     m_ptsOffset = 378000000ll;
     m_mvcBaseViewR = false;
     m_extraIsoBlocks = 0;
-    m_bluRayMode = false;
     m_demuxMode = false;
 }
 
@@ -184,7 +183,7 @@ void MuxerManager::checkTrackList(const vector<StreamInfo>& ci)
             aacFound = true;
     }
 
-    if (m_bluRayMode && aacFound)
+    if ((V3_flags & 0x40) && aacFound)
         LTRACE(LT_ERROR, 2, "Warning! AAC codec is not standard for BD disks!");
 
     if (!avcFound && mvcFound)
@@ -370,7 +369,7 @@ void MuxerManager::parseMuxOpt(const string& opts)
         }
         else if (paramPair[0] == "--blu-ray" || paramPair[0] == "--blu-ray-v3" || paramPair[0] == "--avchd")
         {
-            m_bluRayMode = true;
+            V3_flags |= 0x40;
         }
         else if (paramPair[0] == "--demux")
         {
