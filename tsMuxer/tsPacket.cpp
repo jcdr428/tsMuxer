@@ -390,7 +390,7 @@ uint32_t TS_program_map_section::serialize(uint8_t* buffer, int max_buf_size, bo
 
     if (V3_flags & 0x40)
         program_info_len += 12;
-    
+
     if (casPID)
         program_info_len += 6;
 
@@ -414,7 +414,7 @@ uint32_t TS_program_map_section::serialize(uint8_t* buffer, int max_buf_size, bo
     bitWriter.putBits(4, 15);        // reserved
 
     bitWriter.putBits(12, program_info_len);  // program info len
-    
+
     if (V3_flags & 0x40)
     {
         // put 'HDMV' registration descriptor
@@ -2174,7 +2174,7 @@ void MPLSParser::parsePlayItem(BitStreamReader& reader, int PlayItem_id)
     char clip_Information_file_name[6];
     char clip_codec_identifier[5];
     CLPIStreamInfo::readString(clip_Information_file_name, reader, 5);
-    newItem.fileName = clip_Information_file_name;
+    newItem.fileName.push_back(clip_Information_file_name);
     CLPIStreamInfo::readString(clip_codec_identifier, reader, 4);
     reader.skipBits(11);  // reserved_for_future_use 11 bslbf
     is_multi_angle = reader.getBit();
@@ -2183,7 +2183,6 @@ void MPLSParser::parsePlayItem(BitStreamReader& reader, int PlayItem_id)
 
     newItem.IN_time = reader.getBits(32);   // 32 uimsbf
     newItem.OUT_time = reader.getBits(32);  // 32 uimsbf
-    m_playItems.push_back(newItem);
 
     UO_mask_table(reader);
     PlayItem_random_access_flag = reader.getBit();  // 1 bslbf
@@ -2207,10 +2206,12 @@ void MPLSParser::parsePlayItem(BitStreamReader& reader, int PlayItem_id)
              angle_id < number_of_angles; angle_id++)
         {
             CLPIStreamInfo::readString(clip_Information_file_name, reader, 5);  // 8*5 bslbf
-            CLPIStreamInfo::readString(clip_codec_identifier, reader, 4);       // 8*4 bslbf
-            ref_to_STC_id = reader.getBits(8);                                  // 8 uimsbf
+            newItem.fileName.push_back(clip_Information_file_name);
+            CLPIStreamInfo::readString(clip_codec_identifier, reader, 4);  // 8*4 bslbf
+            ref_to_STC_id = reader.getBits(8);                             // 8 uimsbf
         }
     }
+    m_playItems.push_back(newItem);
     STN_table(reader, PlayItem_id);
 }
 
