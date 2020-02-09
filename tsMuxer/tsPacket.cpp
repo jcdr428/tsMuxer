@@ -386,7 +386,11 @@ uint32_t TS_program_map_section::serialize(uint8_t* buffer, int max_buf_size, bo
     bitWriter.putBits(2, 2);  // indicator
     bitWriter.putBits(2, 3);  // reserved
 
-    int program_info_len = 12;
+    int program_info_len = 0;
+
+    if (V3_flags & 0x40)
+        program_info_len += 12;
+    
     if (casPID)
         program_info_len += 6;
 
@@ -410,24 +414,26 @@ uint32_t TS_program_map_section::serialize(uint8_t* buffer, int max_buf_size, bo
     bitWriter.putBits(4, 15);        // reserved
 
     bitWriter.putBits(12, program_info_len);  // program info len
-    // 88 04 0f ff 84 fc 05 04 48 44 4d 56
+    
+    if (V3_flags & 0x40)
+    {
+        // put 'HDMV' registration descriptor
+        bitWriter.putBits(8, 0x05);
+        bitWriter.putBits(8, 0x04);
+        bitWriter.putBits(8, 0x48);
+        bitWriter.putBits(8, 0x44);
+        bitWriter.putBits(8, 0x4d);
+        bitWriter.putBits(8, 0x56);
 
-    // put 'HDMV' registration descriptor
-    bitWriter.putBits(8, 0x05);
-    bitWriter.putBits(8, 0x04);
-    bitWriter.putBits(8, 0x48);
-    bitWriter.putBits(8, 0x44);
-    bitWriter.putBits(8, 0x4d);
-    bitWriter.putBits(8, 0x56);
-
-    // put DTCP descriptor
-    bitWriter.putBits(8, 0x88);
-    bitWriter.putBits(8, 0x04);
-    bitWriter.putBits(8, 0x0f);
-    bitWriter.putBits(8, 0xff);
-    bitWriter.putBits(
-        8, 0xfc);  // scenarist: 0xfc, prev example: 0x84          here               1 0 000 1 00 1 1 111 1 00
-    bitWriter.putBits(8, 0xfc);
+        // put DTCP descriptor
+        bitWriter.putBits(8, 0x88);
+        bitWriter.putBits(8, 0x04);
+        bitWriter.putBits(8, 0x0f);
+        bitWriter.putBits(8, 0xff);
+        bitWriter.putBits(
+            8, 0xfc);  // scenarist: 0xfc, prev example: 0x84          here               1 0 000 1 00 1 1 111 1 00
+        bitWriter.putBits(8, 0xfc);
+    }
 
     if (casPID)
     {
