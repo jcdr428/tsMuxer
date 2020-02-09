@@ -165,6 +165,7 @@ int HEVCStreamReader::getTSDescriptor(uint8_t* dstBuff)
                 dstBuff += 12;
                 // temporal_layer_subset, HEVC_still_present, HEVC_24hr_picture_present, sub_pic_hrd_params_not_present
                 *dstBuff = 0x1c;
+                // HDR & WGC (Wide Gamut Color) flags
                 if (V3_flags & 0x1e)
                     *dstBuff |= 3;
 
