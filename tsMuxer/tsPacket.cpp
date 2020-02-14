@@ -385,9 +385,9 @@ uint32_t TS_program_map_section::serialize(uint8_t* buffer, int max_buf_size, bo
     bitWriter.putBits(8, 2);  // table id
 
     uint16_t* LengthPos1 = (uint16_t*)(bitWriter.getBuffer() + bitWriter.getBitsCount() / 8);
-    bitWriter.putBits(2, 2);         // indicator
-    bitWriter.putBits(2, 3);         // reserved
-    bitWriter.putBits(12, 0);        // skip lengthField
+    bitWriter.putBits(2, 2);   // indicator
+    bitWriter.putBits(2, 3);   // reserved
+    bitWriter.putBits(12, 0);  // skip lengthField
     int beforeCount1 = bitWriter.getBitsCount() / 8;
 
     bitWriter.putBits(16, program_number);
@@ -399,8 +399,8 @@ uint32_t TS_program_map_section::serialize(uint8_t* buffer, int max_buf_size, bo
     bitWriter.putBits(13, pcr_pid);  // reserved
 
     uint16_t* LengthPos2 = (uint16_t*)(bitWriter.getBuffer() + bitWriter.getBitsCount() / 8);
-    bitWriter.putBits(4, 15);        // reserved
-    bitWriter.putBits(12, 0);        // program info len
+    bitWriter.putBits(4, 15);  // reserved
+    bitWriter.putBits(12, 0);  // program info len
     int beforeCount2 = bitWriter.getBitsCount() / 8;
 
     if (V3_flags & 0x40)
@@ -461,7 +461,7 @@ uint32_t TS_program_map_section::serialize(uint8_t* buffer, int max_buf_size, bo
         bitWriter.putBits(12, 0);  // es_info_len
     }
 
-    int DV_EL = false; // DoVi Enhancement Layer
+    int DV_EL = false;  // DoVi Enhancement Layer
     for (PIDListMap::const_iterator itr = pidList.begin(); itr != pidList.end(); ++itr)
     {
         bitWriter.putBits(8, itr->second.m_streamType);
@@ -509,21 +509,21 @@ uint32_t TS_program_map_section::serialize(uint8_t* buffer, int max_buf_size, bo
     return bitWriter.getBitsCount() / 8 + 5;
 }
 
-void TS_program_map_section::setDoViDescriptor(BitStreamWriter &bitWriter, int PID, bool DV_EL)
+void TS_program_map_section::setDoViDescriptor(BitStreamWriter& bitWriter, int PID, bool DV_EL)
 {
     int HDR = V3_flags & 0x02;
 
-    bitWriter.putBits(8, 5);            // Registration descriptor tag
-    bitWriter.putBits(8, 4);            // Length
-    bitWriter.putBits(8, 0x44);         // 'D'
-    bitWriter.putBits(8, 0x4f);         // 'O'
-    bitWriter.putBits(8, 0x56);         // 'V'
-    bitWriter.putBits(8, 0x49);         // 'I'
+    bitWriter.putBits(8, 5);     // Registration descriptor tag
+    bitWriter.putBits(8, 4);     // Length
+    bitWriter.putBits(8, 0x44);  // 'D'
+    bitWriter.putBits(8, 0x4f);  // 'O'
+    bitWriter.putBits(8, 0x56);  // 'V'
+    bitWriter.putBits(8, 0x49);  // 'I'
 
-    bitWriter.putBits(8, 0xb0);                                           // DoVi descriptor tag
-    bitWriter.putBits(8, DV_EL ? 6 : 4);                                  // Length
-    bitWriter.putBits(8, 1);                                              // dv version major
-    bitWriter.putBits(8, 0);                                              // dv version minor
+    bitWriter.putBits(8, 0xb0);           // DoVi descriptor tag
+    bitWriter.putBits(8, DV_EL ? 6 : 4);  // Length
+    bitWriter.putBits(8, 1);              // dv version major
+    bitWriter.putBits(8, 0);              // dv version minor
     bitWriter.putBits(7, (HDR ? (PID == 0x1011 ? 7 : (DV_EL ? 7 : 8)) :
                                 (PID == 0x1011 ? 4 : (DV_EL ? 4 : 5))));  // profile
     bitWriter.putBits(6, 6);                                              // dv level
