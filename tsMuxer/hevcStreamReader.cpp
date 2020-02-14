@@ -141,7 +141,7 @@ int HEVCStreamReader::getTSDescriptor(uint8_t* dstBuff)
 
         int video_format, frame_rate_index, aspect_ratio_index;
 
-      M2TSStreamInfo::blurayStreamParams(getFPS(), getInterlaced(), getStreamWidth(), getStreamHeight(),
+        M2TSStreamInfo::blurayStreamParams(getFPS(), getInterlaced(), getStreamWidth(), getStreamHeight(),
                                            getStreamAR(), &video_format, &frame_rate_index, &aspect_ratio_index);
 
         *dstBuff++ = (video_format << 4) + frame_rate_index;
