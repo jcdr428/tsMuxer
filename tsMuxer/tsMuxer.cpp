@@ -679,16 +679,6 @@ void TSMuxer::writePATPMT(int64_t pcr, bool force)
 {
     if (pcr == -1 || pcr - m_lastPMTPCR >= m_patPmtDelta || force)
     {
-        if (!m_m2tsMode && m_lastPMTPCR == -1)
-        {
-            for (int k = 0; k < 15; k++)
-            {
-                writePAT();
-                writePMT();
-                writeSIT();
-            }
-        }
-
         m_lastPMTPCR = pcr != -1 ? pcr : m_fixed_pcr_offset;
         writePAT();
         writePMT();

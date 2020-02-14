@@ -10,7 +10,7 @@
 using namespace std;
 
 static const int MAX_SLICE_HEADER = 64;
-const static int HEVC_DESCRIPTOR_TAG = 0x38;
+static const int HEVC_DESCRIPTOR_TAG = 0x38;
 
 int V3_flags = 0;  // flags : V3, BlurayMode, 4K, HDR10+, SL-HDR2, DV, HDR10, SDR
 int HDR10_metadata[6] = {0, 0, 0, 0, 0, 0};
@@ -167,9 +167,9 @@ int HEVCStreamReader::getTSDescriptor(uint8_t* dstBuff)
                 dstBuff += 12;
                 // temporal_layer_subset, HEVC_still_present, HEVC_24hr_picture_present, sub_pic_hrd_params_not_present
                 *dstBuff = 0x1c;
-                // HDR & WGC (Wide Gamut Color) flags
+
                 if (V3_flags & 0x1e)
-                    *dstBuff |= 3;
+                    *dstBuff |= 3;  // HDR & WGC (Wide Gamut Color) flags
 
                 return 15;
             }
