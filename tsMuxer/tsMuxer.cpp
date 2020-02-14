@@ -104,7 +104,6 @@ TSMuxer::TSMuxer(MuxerManager* owner) : AbstractMuxer(owner)
     m_curFileStartPts = 0;  // FIXED_PTS_OFFSET;
     m_splitSize = m_splitDuration = 0;
     m_curFileNum = 0;
-    m_bluRayMode = false;
     m_lastGopNullCnt = 0;
     m_outBufLen = 0;
     m_pesData.reserve(1024 * 128);
@@ -680,16 +679,6 @@ void TSMuxer::writePATPMT(int64_t pcr, bool force)
 {
     if (pcr == -1 || pcr - m_lastPMTPCR >= m_patPmtDelta || force)
     {
-        if (!m_m2tsMode && m_lastPMTPCR == -1)
-        {
-            for (int k = 0; k < 15; k++)
-            {
-                writePAT();
-                writePMT();
-                writeSIT();
-            }
-        }
-
         m_lastPMTPCR = pcr != -1 ? pcr : m_fixed_pcr_offset;
         writePAT();
         writePMT();
@@ -727,7 +716,7 @@ int TSMuxer::getFirstFileNum() const
 std::string TSMuxer::getNextName(const std::string curName)
 {
     std::string result = curName;
-    if (m_bluRayMode)
+    if (V3_flags & 0x40)  // Blu-ray mode
     {
         string fileExt = extractFileExt(m_origFileName);
         string fileName = extractFileName(m_origFileName);
@@ -1425,7 +1414,7 @@ void TSMuxer::parseMuxOpt(const std::string& opts)
         }
         else if (paramPair[0] == "--blu-ray" || paramPair[0] == "--blu-ray-v3" || paramPair[0] == "--avchd")
         {
-            m_bluRayMode = true;
+            V3_flags |= 0x40;
             m_computeMuxStats = true;
         }
         else if (paramPair[0] == "--cut-start" || paramPair[0] == "--cut-end")
