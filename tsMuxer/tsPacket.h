@@ -262,6 +262,7 @@ struct TS_program_map_section
    private:
     void extractDescriptors(uint8_t* curPos, int es_info_len, PMTStreamInfo& pmtInfo);
     void extractPMTDescriptors(uint8_t* curPos, int es_info_len);
+    void setDoViDescriptor(BitStreamWriter &bitWriter, int PID, bool DV_EL);
     // uint32_t tmpAvCrc[257];
 };
 
