@@ -140,7 +140,8 @@ int HEVCStreamReader::getTSDescriptor(uint8_t* dstBuff)
         dstBuff += 6;
 
         int video_format, frame_rate_index, aspect_ratio_index;
-        M2TSStreamInfo::blurayStreamParams(getFPS(), getInterlaced(), getStreamWidth(), getStreamHeight(),
+
+      M2TSStreamInfo::blurayStreamParams(getFPS(), getInterlaced(), getStreamWidth(), getStreamHeight(),
                                            getStreamAR(), &video_format, &frame_rate_index, &aspect_ratio_index);
 
         *dstBuff++ = (video_format << 4) + frame_rate_index;
@@ -166,6 +167,7 @@ int HEVCStreamReader::getTSDescriptor(uint8_t* dstBuff)
                 dstBuff += 12;
                 // temporal_layer_subset, HEVC_still_present, HEVC_24hr_picture_present, sub_pic_hrd_params_not_present
                 *dstBuff = 0x1c;
+
                 if (V3_flags & 0x1e)
                     *dstBuff |= 3;  // HDR & WGC (Wide Gamut Color) flags
 
