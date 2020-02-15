@@ -60,6 +60,8 @@ enum FileCustomData
 
 static const QString FILE_JOIN_PREFIX(" ++ ");
 
+namespace
+{
 bool doubleCompare(double a, double b) { return qAbs(a - b) < 1e-6; }
 
 QString closeDirPath(const QString &src)
@@ -213,6 +215,21 @@ QString quoteStr(const QString &val)
 
 QString myUnquoteStr(const QString &val) { return unquoteStr(val); }
 
+QString getComboBoxTrackText(int idx, const QtvCodecInfo &codecInfo)
+{
+    auto text = QString("[%1] %2").arg(idx + 1).arg(codecInfo.displayName);
+    if (!codecInfo.lang.isEmpty())
+    {
+        text.append(", lang : ");
+        text.append(codecInfo.lang);
+    }
+    text.append(", ");
+    text.append(codecInfo.descr);
+    return text;
+}
+
+}  // namespace
+
 // ----------------------- TsMuxerWindow -------------------------------------
 
 QString TsMuxerWindow::getOutputDir() const
@@ -300,9 +317,9 @@ TsMuxerWindow::TsMuxerWindow()
         ui->listViewFont->item(i, 0)->setFlags(ui->listViewFont->item(i, 0)->flags() & (~Qt::ItemIsEditable));
         ui->listViewFont->item(i, 1)->setFlags(ui->listViewFont->item(i, 0)->flags() & (~Qt::ItemIsEditable));
     }
-    const auto comboBoxIndexChanged = QOverload<int>::of(&QComboBox::currentIndexChanged);
-    const auto spinBoxValueChanged = QOverload<int>::of(&QSpinBox::valueChanged);
-    const auto doubleSpinBoxValueChanged = QOverload<double>::of(&QDoubleSpinBox::valueChanged);
+    void (QComboBox::*comboBoxIndexChanged)(int) = &QComboBox::currentIndexChanged;
+    void (QSpinBox::*spinBoxValueChanged)(int) = &QSpinBox::valueChanged;
+    void (QDoubleSpinBox::*doubleSpinBoxValueChanged)(double) = &QDoubleSpinBox::valueChanged;
     connect(&opacityTimer, &QTimer::timeout, this, &TsMuxerWindow::onOpacityTimer);
     connect(ui->trackLV, &QTableWidget::itemSelectionChanged, this, &TsMuxerWindow::trackLVItemSelectionChanged);
     connect(ui->trackLV, &QTableWidget::itemChanged, this, &TsMuxerWindow::trackLVItemChanged);
@@ -386,12 +403,18 @@ TsMuxerWindow::TsMuxerWindow()
     connect(ui->buttonMux, &QAbstractButton::clicked, this, &TsMuxerWindow::startMuxing);
     connect(ui->buttonSaveMeta, &QAbstractButton::clicked, this, &TsMuxerWindow::saveMetaFileBtnClick);
     connect(ui->radioButtonOutoutInInput, &QAbstractButton::clicked, this, &TsMuxerWindow::onSavedParamChanged);
+    connect(ui->defaultAudioTrackComboBox, comboBoxIndexChanged, this, &TsMuxerWindow::updateMetaLines);
+    connect(ui->defaultSubTrackComboBox, comboBoxIndexChanged, this, &TsMuxerWindow::updateMetaLines);
+    connect(ui->defaultAudioTrackCheckBox, &QCheckBox::stateChanged, this, &TsMuxerWindow::updateMetaLines);
+    connect(ui->defaultSubTrackCheckBox, &QCheckBox::stateChanged, this, &TsMuxerWindow::updateMetaLines);
+    connect(ui->defaultSubTrackForcedOnlyCheckBox, &QCheckBox::stateChanged, this, &TsMuxerWindow::updateMetaLines);
 
     connect(&proc, &QProcess::readyReadStandardOutput, this, &TsMuxerWindow::readFromStdout);
     connect(&proc, &QProcess::readyReadStandardError, this, &TsMuxerWindow::readFromStderr);
-    connect(&proc, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this,
-            &TsMuxerWindow::onProcessFinished);
-    connect(&proc, QOverload<QProcess::ProcessError>::of(&QProcess::error), this, &TsMuxerWindow::onProcessError);
+    void (QProcess::*processFinished)(int, QProcess::ExitStatus) = &QProcess::finished;
+    connect(&proc, processFinished, this, &TsMuxerWindow::onProcessFinished);
+    void (QProcess::*processError)(QProcess::ProcessError) = &QProcess::error;
+    connect(&proc, processError, this, &TsMuxerWindow::onProcessError);
 
     ui->DiskLabel->setVisible(false);
     ui->DiskLabelEdit->setVisible(false);
@@ -668,6 +691,100 @@ void TsMuxerWindow::colorizeCurrentRow(const QtvCodecInfo *codecInfo, int rowInd
         updateCurrentColor(0, 0, 0, rowIndex);
 }
 
+void TsMuxerWindow::addTrackToDefaultComboBox(int trackRowIdx)
+{
+    auto codecInfo = getCodecInfo(trackRowIdx);
+    auto text = getComboBoxTrackText(trackRowIdx, *codecInfo);
+    if (codecInfo->programName.startsWith('A'))
+    {
+        ui->defaultAudioTrackComboBox->addItem(text, trackRowIdx);
+    }
+    else if (codecInfo->programName.startsWith('S'))
+    {
+        ui->defaultSubTrackComboBox->addItem(text, trackRowIdx);
+    }
+}
+
+void TsMuxerWindow::removeTrackFromDefaultComboBox(QComboBox *targetComboBox, QCheckBox *targetCheckBox,
+                                                   int comboBoxIdx, int trackRowIdx)
+{
+    if (targetComboBox->currentData().toInt() == trackRowIdx)
+    {
+        targetCheckBox->setChecked(false);
+    }
+    for (int i = comboBoxIdx + 1; i < targetComboBox->count(); ++i)
+    {
+        auto curTrackIdx = targetComboBox->itemData(i).toInt();
+        targetComboBox->setItemData(i, curTrackIdx - 1);
+    }
+    targetComboBox->removeItem(comboBoxIdx);
+    updateTracksComboBox(targetComboBox);
+}
+
+void TsMuxerWindow::removeTrackFromDefaultComboBox(int trackRowIdx)
+{
+    auto comboBoxIdx = ui->defaultAudioTrackComboBox->findData(trackRowIdx);
+    if (comboBoxIdx != -1)
+    {
+        removeTrackFromDefaultComboBox(ui->defaultAudioTrackComboBox, ui->defaultAudioTrackCheckBox, comboBoxIdx,
+                                       trackRowIdx);
+    }
+    comboBoxIdx = ui->defaultSubTrackComboBox->findData(trackRowIdx);
+    if (comboBoxIdx != -1)
+    {
+        removeTrackFromDefaultComboBox(ui->defaultSubTrackComboBox, ui->defaultSubTrackCheckBox, comboBoxIdx,
+                                       trackRowIdx);
+    }
+}
+
+void TsMuxerWindow::updateTracksComboBox(QComboBox *comboBox)
+{
+    for (int i = 0; i < comboBox->count(); ++i)
+    {
+        auto trackRowIdx = comboBox->itemData(i).toInt();
+        auto codecInfo = getCodecInfo(trackRowIdx);
+        comboBox->setItemText(i, getComboBoxTrackText(trackRowIdx, *codecInfo));
+    }
+}
+
+#include <QDebug>
+
+void TsMuxerWindow::moveTrackInDefaultComboBox(int oldTrackRowIdx, int newTrackRowIdx)
+{
+    qDebug() << oldTrackRowIdx << newTrackRowIdx;
+    auto currentSubTrack = ui->defaultSubTrackComboBox->currentData();
+    auto currentAudioTrack = ui->defaultAudioTrackComboBox->currentData();
+    ui->defaultSubTrackComboBox->clear();
+    ui->defaultAudioTrackComboBox->clear();
+    for (int i = 0; i < ui->trackLV->rowCount(); ++i)
+    {
+        addTrackToDefaultComboBox(i);
+    }
+    postMoveComboBoxUpdate(ui->defaultAudioTrackComboBox, currentAudioTrack, oldTrackRowIdx, newTrackRowIdx);
+    postMoveComboBoxUpdate(ui->defaultSubTrackComboBox, currentSubTrack, oldTrackRowIdx, newTrackRowIdx);
+}
+
+void TsMuxerWindow::postMoveComboBoxUpdate(QComboBox *comboBox, const QVariant &preMoveIndex, int oldIndex,
+                                           int newIndex)
+{
+    if (!preMoveIndex.isValid())
+    {
+        return;
+    }
+    auto curTrackIdx = preMoveIndex.toInt();
+    if (curTrackIdx == oldIndex)
+    {
+        curTrackIdx = newIndex;
+    }
+    else if (curTrackIdx == newIndex)
+    {
+        curTrackIdx = oldIndex;
+    }
+    auto idx = comboBox->findData(curTrackIdx);
+    Q_ASSERT(idx != -1);
+    comboBox->setCurrentIndex(idx);
+}
+
 void TsMuxerWindow::onAudioSubtitlesParamsChanged()
 {
     if (disableUpdatesCnt)
@@ -873,6 +990,7 @@ void TsMuxerWindow::trackLVItemSelectionChanged()
             ui->dtsDwnConvert->setEnabled(codecInfo->displayName == "DTS-HD" || codecInfo->displayName == "TRUE-HD" ||
                                           codecInfo->displayName == "E-AC3 (DD+)");
             ui->secondaryCheckBox->setEnabled(codecInfo->descr.contains("(DTS Express)") ||
+                                              codecInfo->descr.contains("(DTS Express 24bit)") ||
                                               codecInfo->displayName == "E-AC3 (DD+)");
 
             if (!ui->secondaryCheckBox->isEnabled())
@@ -1061,29 +1179,31 @@ void TsMuxerWindow::continueAddFile()
         else if (m_3dMode)
             info.offsetId = 0;
 
-        ui->trackLV->setRowCount(ui->trackLV->rowCount() + 1);
-        ui->trackLV->setRowHeight(ui->trackLV->rowCount() - 1, 18);
+        auto newTrackRowIdx = ui->trackLV->rowCount();
+        ui->trackLV->setRowCount(newTrackRowIdx + 1);
+        ui->trackLV->setRowHeight(newTrackRowIdx, 18);
         QTableWidgetItem *item = new QTableWidgetItem("");
         item->setCheckState(info.enabledByDefault ? Qt::Checked : Qt::Unchecked);
         item->setData(Qt::UserRole, reinterpret_cast<qlonglong>(new QtvCodecInfo(info)));
         ui->trackLV->setCurrentItem(item);
 
-        ui->trackLV->setItem(ui->trackLV->rowCount() - 1, 0, item);
+        ui->trackLV->setItem(newTrackRowIdx, 0, item);
         item = new QTableWidgetItem(newFileName);
         item->setFlags(item->flags() & (~Qt::ItemIsEditable));
-        ui->trackLV->setItem(ui->trackLV->rowCount() - 1, 1, item);
+        ui->trackLV->setItem(newTrackRowIdx, 1, item);
         item = new QTableWidgetItem(info.displayName);
         item->setFlags(item->flags() & (~Qt::ItemIsEditable));
-        ui->trackLV->setItem(ui->trackLV->rowCount() - 1, 2, item);
+        ui->trackLV->setItem(newTrackRowIdx, 2, item);
         item = new QTableWidgetItem(info.lang);
         item->setFlags(item->flags() & (~Qt::ItemIsEditable));
-        ui->trackLV->setItem(ui->trackLV->rowCount() - 1, 3, item);
+        ui->trackLV->setItem(newTrackRowIdx, 3, item);
         item = new QTableWidgetItem(info.descr);
         item->setFlags(item->flags() & (~Qt::ItemIsEditable));
-        ui->trackLV->setItem(ui->trackLV->rowCount() - 1, 4, item);
+        ui->trackLV->setItem(newTrackRowIdx, 4, item);
         if (firstAddedIndex == -1)
-            firstAddedIndex = ui->trackLV->rowCount() - 1;
-        colorizeCurrentRow(&info, ui->trackLV->rowCount() - 1);
+            firstAddedIndex = newTrackRowIdx;
+        colorizeCurrentRow(&info, newTrackRowIdx);
+        addTrackToDefaultComboBox(newTrackRowIdx);
     }
     if (firstAddedIndex >= 0)
     {
@@ -1174,7 +1294,7 @@ void splitLines(const QString &str, QList<QString> &strList)
 
 void TsMuxerWindow::addLines(const QByteArray &arr, QList<QString> &outList, bool isError)
 {
-    QString str = QString::fromLocal8Bit(arr);
+    QString str = QString::fromUtf8(arr);
     QList<QString> strList;
     splitLines(str, strList);
     QString text;
@@ -1497,8 +1617,7 @@ QString TsMuxerWindow::getMuxOpts()
     if (ui->splitByDuration->isChecked())
         rez += QString(" --split-duration=") + ui->spinEditSplitDuration->text();
     if (ui->splitBySize->isChecked())
-        rez += QString(" --split-size=") + ui->editSplitSize->text() +
-               ui->comboBoxMeasure->currentText();
+        rez += QString(" --split-size=") + ui->editSplitSize->text() + ui->comboBoxMeasure->currentText();
 
     int startCut = qTimeToMsec(ui->cutStartTimeEdit->time());
     int endCut = qTimeToMsec(ui->cutEndTimeEdit->time());
@@ -1788,6 +1907,15 @@ void TsMuxerWindow::updateMetaLines()
             continue;
 
         postfix.clear();
+        if (codecInfo->programName.startsWith('S'))
+        {
+            if (isDiskOutput() && ui->defaultSubTrackCheckBox->isChecked() &&
+                ui->defaultSubTrackComboBox->currentData().toInt() == i)
+            {
+                postfix +=
+                    QString(", default=") + (ui->defaultSubTrackForcedOnlyCheckBox->isChecked() ? "forced" : "all");
+            }
+        }
         if (codecInfo->displayName == "PGS")
         {
             if (codecInfo->bindFps && !tmpFps.isEmpty())
@@ -1812,7 +1940,14 @@ void TsMuxerWindow::updateMetaLines()
         if (isVideoCodec(codecInfo->displayName))
             ui->memoMeta->append(prefix + getVideoMetaInfo(codecInfo) + postfix);
         else
+        {
+            if (isDiskOutput() && ui->defaultAudioTrackCheckBox->isChecked() &&
+                ui->defaultAudioTrackComboBox->currentData().toInt() == i && codecInfo->programName.startsWith('A'))
+            {
+                postfix += QString(", default");
+            }
             ui->memoMeta->append(prefix + getAudioMetaInfo(codecInfo) + postfix);
+        }
     }
 }
 
@@ -2033,6 +2168,7 @@ void TsMuxerWindow::deleteTrack(int idx)
     ui->removeTrackBtn->setEnabled(ui->trackLV->currentItem() != 0);
     disableUpdatesCnt--;
     trackLVItemSelectionChanged();
+    removeTrackFromDefaultComboBox(idx);
 }
 
 void TsMuxerWindow::updateNum()
@@ -2149,7 +2285,9 @@ void TsMuxerWindow::onMoveUpButtonCLick()
     if (ui->trackLV->currentItem() == 0 || ui->trackLV->currentRow() < 1)
         return;
     disableUpdatesCnt++;
-    moveRow(ui->trackLV->currentRow(), ui->trackLV->currentRow() - 1);
+    auto preMoveRow = ui->trackLV->currentRow();
+    moveRow(preMoveRow, preMoveRow - 1);
+    moveTrackInDefaultComboBox(preMoveRow, preMoveRow - 1);
     updateMetaLines();
     updateNum();
     disableUpdatesCnt--;
@@ -2161,7 +2299,9 @@ void TsMuxerWindow::onMoveDownButtonCLick()
         ui->trackLV->currentRow() == ui->trackLV->rowCount() - 1)
         return;
     disableUpdatesCnt++;
-    moveRow(ui->trackLV->currentRow(), ui->trackLV->currentRow() + 2);
+    auto preMoveRow = ui->trackLV->currentRow();
+    moveRow(preMoveRow, preMoveRow + 2);
+    moveTrackInDefaultComboBox(preMoveRow, preMoveRow + 1);
     updateMetaLines();
     updateNum();
     disableUpdatesCnt--;
@@ -2397,7 +2537,7 @@ bool TsMuxerWindow::saveMetaFile(const QString &metaName)
         msgBox.exec();
         return false;
     }
-    QByteArray metaText = ui->memoMeta->toPlainText().toLocal8Bit();
+    QByteArray metaText = ui->memoMeta->toPlainText().toUtf8();
     file.write(metaText);
     file.close();
     return true;
