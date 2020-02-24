@@ -834,7 +834,7 @@ int MovDemuxer::mov_read_default(MOVAtom atom)
         a.offset += a.size;
         total_size += a.size;
 
-        if (m_curPos == m_bufEnd)
+        if (m_curPos >= m_bufEnd)
             m_isEOF = true;
     }
 
