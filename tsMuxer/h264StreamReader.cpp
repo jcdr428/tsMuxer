@@ -3,6 +3,7 @@
 #include <fs/systemlog.h>
 
 #include "avCodecs.h"
+#include "hevc.h"
 #include "math.h"
 #include "tsPacket.h"
 #include "vodCoreException.h"
@@ -54,7 +55,7 @@ H264StreamReader::H264StreamReader() : MPEGStreamReader()
 
     m_mvcSubStream = false;
     m_mvcPrimaryStream = false;
-    m_blurayMode = true;
+    m_blurayMode = V3_flags & 0x40;
     number_of_offset_sequences = -1;
     m_bdRomMetaDataMsgPtsPos = 0;
     m_priorityNalAddr = 0;

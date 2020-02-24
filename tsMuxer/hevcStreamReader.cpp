@@ -12,7 +12,9 @@ using namespace std;
 static const int MAX_SLICE_HEADER = 64;
 static const int HEVC_DESCRIPTOR_TAG = 0x38;
 
+
 int V3_flags = 0;  // flags : isV3, reserved, 4K, HDR10+, SL-HDR2, DV, HDR10, SDR
+
 int HDR10_metadata[6] = {0, 0, 0, 0, 0, 0};
 
 HEVCStreamReader::HEVCStreamReader()
@@ -139,6 +141,7 @@ int HEVCStreamReader::getTSDescriptor(uint8_t* dstBuff, bool isM2ts)
         dstBuff += 6;
 
         int video_format, frame_rate_index, aspect_ratio_index;
+
         M2TSStreamInfo::blurayStreamParams(getFPS(), getInterlaced(), getStreamWidth(), getStreamHeight(),
                                            getStreamAR(), &video_format, &frame_rate_index, &aspect_ratio_index);
 

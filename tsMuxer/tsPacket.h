@@ -478,7 +478,7 @@ struct MPLSPlayItem
 {
     uint32_t IN_time;
     uint32_t OUT_time;
-    std::string fileName;
+    std::vector<std::string> fileName;
     int connection_condition;
 };
 

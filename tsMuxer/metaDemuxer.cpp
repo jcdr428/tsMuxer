@@ -348,11 +348,11 @@ int METADemuxer::addStream(const string codec, const string& codecStreamName, co
                 }
                 else
                 {
-                    playItemName = mplsInfo.m_playItems[i].fileName;
+                    playItemName = mplsInfo.m_playItems[i].fileName[0];
                 }
                 string fileName = mplsTrackToFullName(unquotedStreamName, playItemName);
                 if (mplsInfo.isDependStreamExist && !fileExists(fileName))
-                    fileName = mplsTrackToSSIFName(unquotedStreamName, mplsInfo.m_playItems[i].fileName);
+                    fileName = mplsTrackToSSIFName(unquotedStreamName, mplsInfo.m_playItems[i].fileName[0]);
                 fileList.push_back(fileName);
             }
 
