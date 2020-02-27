@@ -437,7 +437,7 @@ int H264StreamReader::writeAdditionData(uint8_t* dstBuffer, uint8_t* dstEnd, AVP
     return curPos - dstBuffer;
 }
 
-int H264StreamReader::getTSDescriptor(uint8_t* dstBuff, bool isM2ts)
+int H264StreamReader::getTSDescriptor(uint8_t* dstBuff, bool bluRayMode)
 {
     SliceUnit slice;
     if (m_firstDecodeNal)
@@ -445,7 +445,7 @@ int H264StreamReader::getTSDescriptor(uint8_t* dstBuff, bool isM2ts)
         additionalStreamCheck(m_buffer, m_bufEnd);
         m_firstDecodeNal = false;
     }
-    if (isM2ts)
+    if (bluRayMode)
     {
         // put 'HDMV' registration descriptor
         *dstBuff++ = 0x05;  // registration descriptor tag
