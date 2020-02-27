@@ -125,12 +125,12 @@ CheckStreamRez HEVCStreamReader::checkStream(uint8_t* buffer, int len)
     return rez;
 }
 
-int HEVCStreamReader::getTSDescriptor(uint8_t* dstBuff, bool isM2ts)
+int HEVCStreamReader::getTSDescriptor(uint8_t* dstBuff, bool bluRayMode)
 {
     if (m_firstFrame)
         checkStream(m_buffer, m_bufEnd - m_buffer);
 
-    if (isM2ts)
+    if (bluRayMode)
     {
         // put 'HDMV' registration descriptor
         *dstBuff++ = 0x05;  // registration descriptor tag
