@@ -372,7 +372,7 @@ void TS_program_map_section::extractDescriptors(uint8_t* curPos, int es_info_len
     }
 }
 
-uint32_t TS_program_map_section::serialize(uint8_t* buffer, int max_buf_size, bool addLang, bool isM2ts)
+uint32_t TS_program_map_section::serialize(uint8_t* buffer, int max_buf_size, bool bluRayMode)
 {
     buffer[0] = 0;
     buffer++;
@@ -399,23 +399,22 @@ uint32_t TS_program_map_section::serialize(uint8_t* buffer, int max_buf_size, bo
     bitWriter.putBits(12, 0);  // program info len
     int beforeCount2 = bitWriter.getBitsCount() / 8;
 
-    if (isM2ts)
-    {
-        // put 'HDMV' registration descriptor
-        bitWriter.putBits(8, 0x05);
-        bitWriter.putBits(8, 0x04);
-        bitWriter.putBits(8, 0x48);
-        bitWriter.putBits(8, 0x44);
-        bitWriter.putBits(8, 0x4d);
-        bitWriter.putBits(8, 0x56);
+    // put 'HDMV' registration descriptor
+    bitWriter.putBits(8, 0x05);
+    bitWriter.putBits(8, 0x04);
+    bitWriter.putBits(8, 0x48);
+    bitWriter.putBits(8, 0x44);
+    bitWriter.putBits(8, 0x4d);
+    bitWriter.putBits(8, 0x56);
 
-        // put DTCP descriptor
+    if (bluRayMode)
+    {
+        // put DTCP descriptor - cf. patent US8462941B2
         bitWriter.putBits(8, 0x88);
         bitWriter.putBits(8, 0x04);
         bitWriter.putBits(8, 0x0f);
         bitWriter.putBits(8, 0xff);
-        bitWriter.putBits(
-            8, 0xfc);  // scenarist: 0xfc, prev example: 0x84          here               1 0 000 1 00 1 1 111 1 00
+        bitWriter.putBits(8, 0xfc);  // scenarist: 0xfc
         bitWriter.putBits(8, 0xfc);
     }
 
@@ -470,7 +469,7 @@ uint32_t TS_program_map_section::serialize(uint8_t* buffer, int max_buf_size, bo
         int beforeCount = bitWriter.getBitsCount() / 8;
 
         // video stream, non Blu-ray mode and Dolby Vision flag => write DoVi descriptors
-        bool insertDoVi = (itr->second.m_pid >> 4 == 0x101) && !isM2ts && (V3_flags & 0x04);
+        bool insertDoVi = (itr->second.m_pid >> 4 == 0x101) && !blurayMode && (V3_flags & 0x04);
         if (insertDoVi)
         {
             setDoViDescriptor(bitWriter, itr->second.m_pid, isDV_EL);
