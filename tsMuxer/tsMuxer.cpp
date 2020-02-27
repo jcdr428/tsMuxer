@@ -160,7 +160,7 @@ void TSMuxer::intAddStream(const std::string& streamName, const std::string& cod
     int descriptorLen = 0;
     uint8_t descrBuffer[1024];
     if (codecReader != 0)
-        descriptorLen = codecReader->getTSDescriptor(descrBuffer, m_m2tsMode);
+        descriptorLen = codecReader->getTSDescriptor(descrBuffer, m_bluRayMode);
 
     if (codecName[0] == 'V')
         m_mainStreamIndex = streamIndex;
@@ -278,11 +278,6 @@ void TSMuxer::intAddStream(const std::string& streamName, const std::string& cod
             LTRACE(LT_DEBUG, 0, "Muxing fps: " << fps);
         }
     }
-    /*	int descriptorLen = 0;
-            uint8_t descrBuffer[1024];
-            if (codecReader != 0)
-                    descriptorLen = codecReader->getTSDescriptor(descrBuffer);
-    */
 
     if (codecName == "V_MPEG4/ISO/AVC")
     {
