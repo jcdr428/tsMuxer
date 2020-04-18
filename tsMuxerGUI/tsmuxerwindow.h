@@ -3,17 +3,16 @@
 
 #include <QHeaderView>
 #include <QProcess>
-#include <QSoundEffect>
 #include <QTimer>
-#include <QTranslator>
 #include <QWidget>
 
 #include "codecinfo.h"
 
 class QFileDialog;
+class QTemporaryFile;
+class QSound;
 class QTableWidgetItem;
 class QComboBox;
-class QCheckBox;
 
 class MuxForm;
 namespace Ui
@@ -37,6 +36,7 @@ class TsMuxerWindow : public QWidget
     Q_OBJECT
    public:
     TsMuxerWindow();
+    ~TsMuxerWindow() override;
 
     void addFiles(const QList<QUrl>& files);
    signals:
@@ -44,8 +44,7 @@ class TsMuxerWindow : public QWidget
     void codecListReady();
     void fileAdded();
     void fileAppended();
-
-   private:
+   private slots:
     void onAddBtnClick();
     void readFromStdout();
     void readFromStderr();
@@ -87,11 +86,9 @@ class TsMuxerWindow : public QWidget
     void at_sectionCheckstateChanged(Qt::CheckState state);
     void updateMuxTime1();
     void updateMuxTime2();
-    void onLanguageComboBoxIndexChanged(int);
 
    protected:
     void closeEvent(QCloseEvent* event) override;
-    void changeEvent(QEvent* event) override;
     bool eventFilter(QObject* obj, QEvent* event) override;
     void updateMaxOffsets();
     void updateCustomChapters();
@@ -140,14 +137,8 @@ class TsMuxerWindow : public QWidget
     void updateCurrentColor(int dr, int dg, int db, int rowIndex);
     void colorizeCurrentRow(const QtvCodecInfo* codecInfo, int rowIndex = -1);
 
-    void addTrackToDefaultComboBox(int trackRowIdx);
-    void removeTrackFromDefaultComboBox(int trackRowIdx);
-    void removeTrackFromDefaultComboBox(QComboBox*, QCheckBox*, int comboBoxIdx, int trackRowIdx);
-    void updateTracksComboBox(QComboBox*);
-    void moveTrackInDefaultComboBox(int oldIndex, int newIndex);
-    void postMoveComboBoxUpdate(QComboBox*, const QVariant& preMoveIndex, int oldIndex, int newIndex);
-    void setUiMetaItemsData();
-
+    // QTemporaryFile* tempFile;
+    // QString tempFileName;
     QString metaName;
     Ui::TsMuxerWindow* ui;
     QFileDialog* openFileDialog;
@@ -163,7 +154,7 @@ class TsMuxerWindow : public QWidget
     bool outFileNameModified;
     QString oldFileName;
     bool outFileNameDisableChange;
-    QString mSaveDialogFilter;
+    QString saveDialogFilter;
     MuxForm* muxForm;
     QString newFileName;
     QList<QtvCodecInfo> codecList;
@@ -179,15 +170,13 @@ class TsMuxerWindow : public QWidget
     QnCheckBoxedHeaderView* m_header;
     QString lastSourceDir;
 
-    QTranslator qtCoreTranslator;
-    QTranslator tsMuxerTranslator;
-
     void dragEnterEvent(QDragEnterEvent* event) override;
     void dropEvent(QDropEvent* event) override;
     void dragMoveEvent(QDragMoveEvent* event) override;
     void dragLeaveEvent(QDragLeaveEvent* event) override;
 
-    QSoundEffect sound;
+    QTemporaryFile* tempSoundFile;
+    QSound* sound;
     void myPlaySound(const QString& fileName);
     bool isVideoCropped();
 };

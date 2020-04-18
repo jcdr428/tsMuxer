@@ -7,7 +7,7 @@
 TEMPLATE = app
 TARGET = tsMuxerGUI
 QT = core gui widgets multimedia
-CONFIG += c++14 strict_c++ lrelease embed_translations
+CONFIG += c++14 strict_c++
 
 HEADERS += tsmuxerwindow.h lang_codes.h muxForm.h checkboxedheaderview.h \
            codecinfo.h
@@ -15,22 +15,7 @@ SOURCES += main.cpp tsmuxerwindow.cpp muxForm.cpp checkboxedheaderview.cpp
 FORMS += tsmuxerwindow.ui muxForm.ui
 
 RESOURCES += images.qrc
-TRANSLATIONS = translations/tsmuxergui_en.ts translations/tsmuxergui_ru.ts
+TRANSLATIONS = 
 win32 {
   RC_FILE += icon.rc
 }
-
-version_num = 2.6.16
-tsmuxer_release = 0
-equals(tsmuxer_release, 1) {
-  tsmuxer_version = $${version_num}
-} else {
-  system(git status >/dev/null 2>&1) {
-    git_rev_short = $$system(git rev-parse --short HEAD)
-    tsmuxer_version = git-$${git_rev_short}
-  } else {
-    tsmuxer_version = $${version_num}-dev
-  }
-}
-
-DEFINES += TSMUXER_VERSION=\\\"$${tsmuxer_version}\\\"

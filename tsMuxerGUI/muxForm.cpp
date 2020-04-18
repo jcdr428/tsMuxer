@@ -21,15 +21,6 @@ void MuxForm::closeEvent(QCloseEvent *event)
     event->accept();
 }
 
-void MuxForm::changeEvent(QEvent *event)
-{
-    if (event->type() == QEvent::LanguageChange)
-    {
-        ui->retranslateUi(this);
-    }
-    QDialog::changeEvent(event);
-}
-
 void MuxForm::prepare(const QString &label)
 {
     muxProcess = 0;
@@ -45,8 +36,7 @@ void MuxForm::prepare(const QString &label)
 
 void MuxForm::onProgressChanged()
 {
-    ui->progressLabel->setText(QObject::tr("Progress: ") + QString::number(ui->progressBar->value() / 10.0, 'f', 1) +
-                               '%');
+    ui->progressLabel->setText(QString("Progress: ") + QString::number(ui->progressBar->value() / 10.0, 'f', 1) + '%');
 }
 
 void MuxForm::setProgress(int value) { ui->progressBar->setValue(value); }
@@ -68,7 +58,7 @@ void MuxForm::addStdErrLine(const QString &line)
     if (errCnt >= MAX_ERRORS_CNT)
     {
         ui->stderrText->append("---------------------------------------");
-        ui->stderrText->append(QObject::tr("Too many errors! tsMuxeR is terminated."));
+        ui->stderrText->append("Too many errors! tsMuxeR is terminated.");
         onAbort();
     }
     QTextCursor c = ui->stderrText->textCursor();
@@ -81,9 +71,9 @@ void MuxForm::muxFinished(int exitCode, const QString &)
     if (muxProcess && ui->abortBtn->isEnabled())
     {
         if (exitCode == 0)
-            setWindowTitle(QObject::tr("tsMuxeR successfully finished"));
+            setWindowTitle("tsMuxeR successfully finished");
         else
-            setWindowTitle(QObject::tr("tsMuxeR finished with error code %1").arg(exitCode));
+            setWindowTitle("tsMuxeR finished with error code " + QString::number(exitCode));
         ui->muxLabel->setText(windowTitle() + '.');
         ui->abortBtn->setEnabled(false);
         ui->okBtn->setEnabled(true);
@@ -96,10 +86,10 @@ void MuxForm::onAbort()
         return;
     ui->abortBtn->setEnabled(false);
     ui->okBtn->setEnabled(true);
-    setWindowTitle(QObject::tr("terminating tsMuxeR..."));
+    setWindowTitle("terminating tsMuxeR...");
     muxProcess->kill();
     muxProcess->waitForFinished();
-    setWindowTitle(QObject::tr("tsMuxeR is terminated"));
+    setWindowTitle("tsMuxeR is terminated");
     muxProcess = nullptr;
 }
 

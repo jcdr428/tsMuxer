@@ -136,7 +136,7 @@
           </item>
          </layout>
         </widget>
-        <widget class="QWidget" name="layoutWidget1" >
+        <widget class="QWidget" name="layoutWidget" >
          <layout class="QVBoxLayout" name="verticalLayout_4" >
           <item>
            <widget class="QLabel" name="label_4" >
