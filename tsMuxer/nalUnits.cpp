@@ -1075,7 +1075,7 @@ double SPSUnit::getFPS() const
 {
     if (num_units_in_tick != 0)
     {
-        double tmp = time_scale / (float)num_units_in_tick / 2;  //(float)(frame_mbs_only_flag+1);
+        double tmp = time_scale / (double)num_units_in_tick / 2;  //(double)(frame_mbs_only_flag+1);
         // if (abs(tmp - (double) 23.9760239760) < 3e-3)
         //	return 23.9760239760;
         return tmp;
