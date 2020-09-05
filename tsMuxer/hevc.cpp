@@ -239,7 +239,7 @@ void HevcVpsUnit::setFPS(double fps)
     updateBits(num_units_in_tick_bit_pos + 32, 32, time_scale);
 }
 
-double HevcVpsUnit::getFPS() const { return num_units_in_tick ? time_scale / (float)num_units_in_tick : 0; }
+double HevcVpsUnit::getFPS() const { return num_units_in_tick ? time_scale / (double)num_units_in_tick : 0; }
 
 string HevcVpsUnit::getDescription() const
 {
@@ -800,7 +800,7 @@ int HevcSpsUnit::deserialize()
     }
 }
 
-double HevcSpsUnit::getFPS() const { return num_units_in_tick ? time_scale / (float)num_units_in_tick : 0; }
+double HevcSpsUnit::getFPS() const { return num_units_in_tick ? time_scale / (double)num_units_in_tick : 0; }
 
 string HevcSpsUnit::getDescription() const
 {
