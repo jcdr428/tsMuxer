@@ -405,7 +405,7 @@ bool HEVCStreamReader::isSuffix(int nalType) const
             (nalType >= NAL_UNSPEC56 && nalType <= NAL_DVEL));
 }
 
-void HEVCStreamReader::checkFrameRate()
+void HEVCStreamReader::checkFrameDepth()
 {
     if (m_totalFrameNum++ > 0)
         m_curDts += m_pcrIncPerFrame;
