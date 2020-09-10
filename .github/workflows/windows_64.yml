@@ -2,7 +2,7 @@ name: Build for Windows 64-bit
 
 on:
   push:
-    branches: [precheck_frame_rate]
+    branches: [precheck_frame_depth]
 
 jobs:
   build:
