@@ -45,6 +45,7 @@ HEVCStreamReader::~HEVCStreamReader()
 CheckStreamRez HEVCStreamReader::checkStream(uint8_t* buffer, int len)
 {
     CheckStreamRez rez;
+    HevcSliceHeader slice;
 
     uint8_t* end = buffer + len;
     for (uint8_t* nal = NALUnit::findNextNAL(buffer, end); nal < end - 4; nal = NALUnit::findNextNAL(nal, end))
@@ -57,7 +58,6 @@ CheckStreamRez HEVCStreamReader::checkStream(uint8_t* buffer, int len)
         switch (nalType)
         {
         case NAL_VPS:
-        {
             if (!m_vps)
                 m_vps = new HevcVpsUnit();
             m_vps->decodeBuffer(nal, nextNal);
@@ -67,9 +67,7 @@ CheckStreamRez HEVCStreamReader::checkStream(uint8_t* buffer, int len)
             if (m_vps->num_units_in_tick)
                 updateFPS(m_vps, nal, nextNal, 0);
             break;
-        }
         case NAL_SPS:
-        {
             if (!m_sps)
                 m_sps = new HevcSpsUnit();
             m_sps->decodeBuffer(nal, nextNal);
@@ -78,28 +76,22 @@ CheckStreamRez HEVCStreamReader::checkStream(uint8_t* buffer, int len)
             m_spsPpsFound = true;
             updateFPS(m_sps, nal, nextNal, 0);
             break;
-        }
         case NAL_PPS:
-        {
             if (!m_pps)
                 m_pps = new HevcPpsUnit();
             m_pps->decodeBuffer(nal, nextNal);
             if (m_pps->deserialize() != 0)
                 return rez;
             break;
-        }
         case NAL_SEI_PREFIX:
-        {
             if (!m_hdr)
                 m_hdr = new HevcHdrUnit();
             m_hdr->decodeBuffer(nal, nextNal);
             if (m_hdr->deserialize() != 0)
                 return rez;
             break;
-        }
         case NAL_DVRPU:
         case NAL_DVEL:
-        {
             if (!m_hdr)
                 m_hdr = new HevcHdrUnit();
             if (nal[1] == 1)
@@ -110,8 +102,15 @@ CheckStreamRez HEVCStreamReader::checkStream(uint8_t* buffer, int len)
                     m_hdr->isDVRPU = true;
                 V3_flags |= DV;
             }
-            break;
         }
+        
+        if (isSlice(nalType))
+        {
+            slice.decodeBuffer(nal, FFMIN(nal + MAX_SLICE_HEADER, nextNal));
+            if (slice.deserialize(m_sps, m_pps))
+                return rez;  // not enough buffer or error
+            m_fullPicOrder = toFullPicOrder(&slice, m_sps->log2_max_pic_order_cnt_lsb);
+            checkFrameDepth();
         }
     }
 
@@ -406,7 +405,7 @@ bool HEVCStreamReader::isSuffix(int nalType) const
             (nalType >= NAL_UNSPEC56 && nalType <= NAL_DVEL));
 }
 
-void HEVCStreamReader::incTimings()
+void HEVCStreamReader::checkFrameRate()
 {
     if (m_totalFrameNum++ > 0)
         m_curDts += m_pcrIncPerFrame;
@@ -483,7 +482,6 @@ int HEVCStreamReader::intDecodeNAL(uint8_t* buff)
                 if (sliceFound)
                 {  // first slice of next frame: case where there is no non-VCL NAL between the two frames
                     m_lastDecodedPos = prevPos;  // next frame started
-                    incTimings();
                     return 0;
                 }
                 else
@@ -505,7 +503,6 @@ int HEVCStreamReader::intDecodeNAL(uint8_t* buff)
         {  // first non-VCL prefix NAL (AUD, SEI...) following current frame
             if (sliceFound)
             {
-                incTimings();
                 m_lastDecodedPos = prevPos;  // next frame started
                 return 0;
             }
