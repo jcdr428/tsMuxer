@@ -103,7 +103,7 @@ CheckStreamRez HEVCStreamReader::checkStream(uint8_t* buffer, int len)
                 V3_flags |= DV;
             }
         }
-        
+
         if (isSlice(nalType))
         {
             slice.decodeBuffer(nal, FFMIN(nal + MAX_SLICE_HEADER, nextNal));
