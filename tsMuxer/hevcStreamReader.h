@@ -37,7 +37,7 @@ class HEVCStreamReader : public MPEGStreamReader
    private:
     bool isSlice(int nalType) const;
     bool isSuffix(int nalType) const;
-    void incTimings();
+    void checkFrameDepth();
     int toFullPicOrder(HevcSliceHeader* slice, int pic_bits);
     void storeBuffer(MemoryBlock& dst, const uint8_t* data, const uint8_t* dataEnd);
     uint8_t* writeBuffer(MemoryBlock& srcData, uint8_t* dstBuffer, uint8_t* dstEnd);
