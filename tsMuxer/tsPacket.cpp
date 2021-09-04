@@ -2374,7 +2374,8 @@ void MPLSParser::composeSTN_table(BitStreamWriter& writer, int PlayItem_id, bool
         }
         else
         {
-            LTRACE(LT_ERROR, 2, "Unsupported media type " << stream_coding_type << " for AVCHD/Blu-ray muxing. Aborting...");
+            LTRACE(LT_ERROR, 2,
+                   "Unsupported media type " << stream_coding_type << " for AVCHD/Blu-ray muxing. Aborting...");
             THROW(ERR_COMMON, "");
         }
     }
