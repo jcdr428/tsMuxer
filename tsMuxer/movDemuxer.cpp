@@ -8,7 +8,7 @@
 #include "abstractStreamReader.h"
 #include "avPacket.h"
 #include "bitStream.h"
-//#include "hevc.h"
+#include "hevc.h"
 #include "limits.h"
 #include "math.h"
 #include "subTrackFilter.h"
