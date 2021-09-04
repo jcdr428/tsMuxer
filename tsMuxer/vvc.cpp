@@ -858,7 +858,6 @@ int VvcSpsUnit::vui_parameters()
     return 0;
 }
 
-
 // ----------------------- VvcPpsUnit ------------------------
 VvcPpsUnit::VvcPpsUnit() : pps_id(-1), sps_id(-1) {}
 
