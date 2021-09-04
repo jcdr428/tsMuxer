@@ -11,12 +11,13 @@
 #include "bitStream.h"
 #include "crc32.h"
 #include "h264StreamReader.h"
-#include "hevc.h"
+//#include "hevc.h"
 #include "math.h"
 #include "mpegStreamReader.h"
 #include "simplePacketizerReader.h"
 #include "tsMuxer.h"
 #include "vodCoreException.h"
+//#include "vvc.h"
 
 using namespace std;
 
@@ -29,7 +30,7 @@ bool isVideoStreamType(int stream_coding_type)
 {
     return stream_coding_type == STREAM_TYPE_VIDEO_MPEG2 || stream_coding_type == STREAM_TYPE_VIDEO_H264 ||
            stream_coding_type == STREAM_TYPE_VIDEO_VC1 || stream_coding_type == STREAM_TYPE_VIDEO_MVC ||
-           stream_coding_type == STREAM_TYPE_VIDEO_H265;
+           stream_coding_type == STREAM_TYPE_VIDEO_H265 || STREAM_TYPE_VIDEO_H266;
 }
 
 bool isAudioStreamType(int stream_coding_type)
