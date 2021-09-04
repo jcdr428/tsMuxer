@@ -18,7 +18,7 @@ class HEVCStreamReader : public MPEGStreamReader
     bool needSPSForSplit() const override { return false; }
 
    protected:
-    const CodecInfo& getCodecInfo() override { return hevcCodecInfo; }
+    const CodecInfo& getCodecInfo() { return hevcCodecInfo; }
     virtual int intDecodeNAL(uint8_t* buff) override;
 
     double getStreamFPS(void* curNalUnit) override;
