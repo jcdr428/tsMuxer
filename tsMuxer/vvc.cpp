@@ -106,7 +106,7 @@ bool VvcUnit::dpb_parameters(int MaxSubLayersMinus1, bool subLayerInfoFlag)
         if (dpb_max_num_reorder_pics > dpb_max_dec_pic_buffering_minus1)
             return 1;
         unsigned dpb_max_latency_increase_plus1 = extractUEGolombCode();
-        if (dpb_max_latency_increase_plus1 > (2 << 31) - 2)
+        if (dpb_max_latency_increase_plus1 == 0xffffffff)
             return 1;
     }
     return 0;
@@ -772,7 +772,7 @@ int VvcSpsUnit::deserialize()
     }
 }
 
-int VvcSpsUnit::ref_pic_list_struct(size_t listIdx, size_t rplsIdx)
+int VvcSpsUnit::ref_pic_list_struct(int listIdx, int rplsIdx)
 {
     unsigned num_ref_entries = extractUEGolombCode();
     bool ltrp_in_header_flag = 1;
@@ -858,6 +858,7 @@ int VvcSpsUnit::vui_parameters()
     return 0;
 }
 
+
 // ----------------------- VvcPpsUnit ------------------------
 VvcPpsUnit::VvcPpsUnit() : pps_id(-1), sps_id(-1) {}
 
@@ -884,7 +885,15 @@ int VvcPpsUnit::deserialize()
 }
 
 // ----------------------- VvcHrdUnit ------------------------
-VvcHrdUnit::VvcHrdUnit() {}
+VvcHrdUnit::VvcHrdUnit()
+    : general_nal_hrd_params_present_flag(0),
+      general_du_hrd_params_present_flag(0),
+      general_vcl_hrd_params_present_flag(0),
+      hrd_cpb_cnt_minus1(0),
+      num_units_in_tick(0),
+      time_scale(0)
+{
+}
 
 bool VvcHrdUnit::general_timing_hrd_parameters()
 {
@@ -936,18 +945,18 @@ bool VvcHrdUnit::sublayer_hrd_parameters(int subLayerId)
     for (int j = 0; j <= hrd_cpb_cnt_minus1; j++)
     {
         unsigned bit_rate_value_minus1 = extractUEGolombCode();
-        if (bit_rate_value_minus1 > (2 << 31) - 2)
+        if (bit_rate_value_minus1 == 0xffffffff)
             return 1;
         unsigned cpb_size_value_minus1 = extractUEGolombCode();
-        if (cpb_size_value_minus1 > (2 << 31) - 2)
+        if (cpb_size_value_minus1 == 0xffffffff)
             return 1;
         if (general_du_hrd_params_present_flag)
         {
             unsigned cpb_size_du_value_minus1 = extractUEGolombCode();
-            if (cpb_size_du_value_minus1 > (2 << 31) - 2)
+            if (cpb_size_du_value_minus1 == 0xffffffff)
                 return 1;
             unsigned bit_rate_du_value_minus1 = extractUEGolombCode();
-            if (bit_rate_du_value_minus1 > (2 << 31) - 2)
+            if (bit_rate_du_value_minus1 == 0xffffffff)
                 return 1;
         }
         m_reader.skipBit();  // cbr_flag

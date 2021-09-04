@@ -143,7 +143,7 @@ struct VvcSpsUnit : public VvcUnitWithProfile
     unsigned time_scale;
 
    private:
-    int ref_pic_list_struct(size_t listIdx, size_t rplsIdx);
+    int ref_pic_list_struct(int listIdx, int rplsIdx);
     unsigned sps_num_ref_pic_lists;
     bool weighted_pred_flag;
     bool weighted_bipred_flag;
