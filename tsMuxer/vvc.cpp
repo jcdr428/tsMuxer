@@ -8,7 +8,7 @@
 #include "vodCoreException.h"
 #include "vod_common.h"
 
-//#include Math
+#include <math.h>
 
 using namespace std;
 static const int EXTENDED_SAR = 255;
