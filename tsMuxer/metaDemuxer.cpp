@@ -14,7 +14,6 @@
 #include "dvbSubStreamReader.h"
 #include "h264StreamReader.h"
 #include "hevcStreamReader.h"
-#include "vvcStreamReader.h"
 #include "limits.h"
 #include "lpcmStreamReader.h"
 #include "math.h"
@@ -32,6 +31,7 @@
 #include "vc1StreamReader.h"
 #include "vodCoreException.h"
 #include "vod_common.h"
+#include "vvcStreamReader.h"
 
 using namespace std;
 

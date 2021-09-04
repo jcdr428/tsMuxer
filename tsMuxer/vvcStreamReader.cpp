@@ -2,11 +2,11 @@
 
 #include <fs/systemlog.h>
 
-#include "vvc.h"
 #include "nalUnits.h"
 #include "tsMuxer.h"
 #include "tsPacket.h"
 #include "vodCoreException.h"
+#include "vvc.h"
 
 using namespace std;
 
@@ -424,7 +424,7 @@ uint8_t* VVCStreamReader::writeBuffer(MemoryBlock& srcData, uint8_t* dstBuffer, 
 }
 
 int VVCStreamReader::writeAdditionData(uint8_t* dstBuffer, uint8_t* dstEnd, AVPacket& avPacket,
-                                        PriorityDataInfo* priorityData)
+                                       PriorityDataInfo* priorityData)
 {
     uint8_t* curPos = dstBuffer;
 

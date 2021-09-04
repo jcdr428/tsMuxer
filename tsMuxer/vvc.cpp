@@ -517,11 +517,9 @@ int VvcSpsUnit::deserialize()
                 return 1;
         }
         int sps_num_extra_ph_bytes = m_reader.getBits(2);
-        for (size_t i = 0; i < sps_num_extra_ph_bytes; i++)
-            m_reader.skipBits(8);  // sps_extra_ph_bit_present_flag[i]
+        for (size_t i = 0; i < sps_num_extra_ph_bytes; i++) m_reader.skipBits(8);  // sps_extra_ph_bit_present_flag[i]
         int sps_num_extra_sh_bytes = m_reader.getBits(2);
-        for (size_t i = 0; i < sps_num_extra_sh_bytes; i++)
-            m_reader.skipBits(8);  // sps_extra_sh_bit_present_flag[i]
+        for (size_t i = 0; i < sps_num_extra_sh_bytes; i++) m_reader.skipBits(8);  // sps_extra_sh_bit_present_flag[i]
         if (sps_ptl_dpb_hrd_params_present_flag)
         {
             bool sps_sublayer_dpb_params_flag = (max_sublayers_minus1 > 0) ? m_reader.getBit() : 0;
@@ -579,18 +577,19 @@ int VvcSpsUnit::deserialize()
             return 1;
         if (sps_max_mtt_hierarchy_depth_inter_slice != 0)
         {
-            if (extractUEGolombCode() > CtbLog2SizeY - MinQtLog2SizeInterY) // sps_log2_diff_max_bt_min_qt_inter_slice
+            if (extractUEGolombCode() > CtbLog2SizeY - MinQtLog2SizeInterY)  // sps_log2_diff_max_bt_min_qt_inter_slice
                 return 1;
-            if (extractUEGolombCode() > min(6, CtbLog2SizeY) - MinQtLog2SizeInterY) // sps_log2_diff_max_tt_min_qt_inter_slice
+            if (extractUEGolombCode() >
+                min(6, CtbLog2SizeY) - MinQtLog2SizeInterY)  // sps_log2_diff_max_tt_min_qt_inter_slice
                 return 1;
         }
         bool sps_max_luma_transform_size_64_flag = (CtbSizeY > 32 ? m_reader.getBit() : 0);
         bool sps_transform_skip_enabled_flag = m_reader.getBit();
         if (sps_transform_skip_enabled_flag)
         {
-            if (extractUEGolombCode() > 3) // sps_log2_transform_skip_max_size_minus2
+            if (extractUEGolombCode() > 3)  // sps_log2_transform_skip_max_size_minus2
                 return 1;
-            m_reader.skipBit(); // sps_bdpcm_enabled_flag
+            m_reader.skipBit();  // sps_bdpcm_enabled_flag
         }
         if (m_reader.getBit())  // sps_mts_enabled_flag
         {
@@ -613,8 +612,8 @@ int VvcSpsUnit::deserialize()
                     return 1;
                 for (size_t j = 0; j <= sps_num_points_in_qp_table_minus1; j++)
                 {
-                    extractUEGolombCode(); // sps_delta_qp_in_val_minus1
-                    extractUEGolombCode(); // sps_delta_qp_diff_val
+                    extractUEGolombCode();  // sps_delta_qp_in_val_minus1
+                    extractUEGolombCode();  // sps_delta_qp_diff_val
                 }
             }
         }
@@ -640,7 +639,7 @@ int VvcSpsUnit::deserialize()
         bool sps_amvr_enabled_flag = m_reader.getBit();
         if (m_reader.getBit())   // sps_bdof_enabled_flag
             m_reader.skipBit();  // sps_bdof_control_present_in_ph_flag
-        m_reader.skipBit(); // sps_smvd_enabled_flag
+        m_reader.skipBit();      // sps_smvd_enabled_flag
         if (m_reader.getBit())   // sps_dmvr_enabled_flag
             m_reader.skipBit();  // sps_dmvr_control_present_in_ph_flag
         if (m_reader.getBit())   // sps_mmvd_enabled_flag
@@ -805,9 +804,7 @@ int VvcSpsUnit::ref_pic_list_struct(size_t listIdx, size_t rplsIdx)
     return 0;
 }
 
-double VvcSpsUnit::getFPS() const { 
-    return num_units_in_tick ? time_scale / (float)num_units_in_tick : 0;
-}
+double VvcSpsUnit::getFPS() const { return num_units_in_tick ? time_scale / (float)num_units_in_tick : 0; }
 
 string VvcSpsUnit::getDescription() const
 {
@@ -825,18 +822,18 @@ int VvcSpsUnit::vui_parameters()
 {
     bool progressive_source_flag = m_reader.getBit();
     bool interlaced_source_flag = m_reader.getBit();
-    m_reader.skipBit(); // non_packed_constraint_flag
-    m_reader.skipBit(); // non_projected_constraint_flag
+    m_reader.skipBit();  // non_packed_constraint_flag
+    m_reader.skipBit();  // non_projected_constraint_flag
 
-    if (m_reader.getBit() ) // aspect_ratio_info_present_flag
+    if (m_reader.getBit())  // aspect_ratio_info_present_flag
     {
-        if (m_reader.getBits(8) == EXTENDED_SAR) // aspect_ratio_idc
-            m_reader.skipBits(32); // sar_width, sar_height
+        if (m_reader.getBits(8) == EXTENDED_SAR)  // aspect_ratio_idc
+            m_reader.skipBits(32);                // sar_width, sar_height
     }
 
-    if (m_reader.getBit()) // overscan_info_present_flag
+    if (m_reader.getBit())   // overscan_info_present_flag
         m_reader.skipBit();  // overscan_appropriate_flag
-    if (m_reader.getBit()) // colour_description_present_flag
+    if (m_reader.getBit())   // colour_description_present_flag
     {
         colour_primaries = m_reader.getBits(8);
         transfer_characteristics = m_reader.getBits(8);
@@ -844,7 +841,7 @@ int VvcSpsUnit::vui_parameters()
         full_range_flag = m_reader.getBit();
     }
 
-    if (m_reader.getBit()) // chroma_loc_info_present_flag
+    if (m_reader.getBit())  // chroma_loc_info_present_flag
     {
         if (progressive_source_flag && !interlaced_source_flag)
             chroma_sample_loc_type_frame = extractUEGolombCode();
@@ -862,11 +859,7 @@ int VvcSpsUnit::vui_parameters()
 }
 
 // ----------------------- VvcPpsUnit ------------------------
-VvcPpsUnit::VvcPpsUnit()
-    : pps_id(-1),
-      sps_id(-1)
-{
-}
+VvcPpsUnit::VvcPpsUnit() : pps_id(-1), sps_id(-1) {}
 
 int VvcPpsUnit::deserialize()
 {
@@ -924,12 +917,12 @@ bool VvcHrdUnit::ols_timing_hrd_parameters(int firstSubLayer, int MaxSubLayersVa
             m_reader.getBit() /* fixed_pic_rate_general_flag) */ ? 1 : m_reader.getBit();
         if (fixed_pic_rate_within_cvs_flag)
         {
-            if (extractUEGolombCode() > 2047) // elemental_duration_in_tc_minus1
+            if (extractUEGolombCode() > 2047)  // elemental_duration_in_tc_minus1
                 return 1;
         }
         else if ((general_nal_hrd_params_present_flag || general_vcl_hrd_params_present_flag) &&
                  hrd_cpb_cnt_minus1 == 0)
-            m_reader.skipBit(); // low_delay_hrd_flag
+            m_reader.skipBit();  // low_delay_hrd_flag
         if (general_nal_hrd_params_present_flag)
             sublayer_hrd_parameters(i);
         if (general_vcl_hrd_params_present_flag)
@@ -957,7 +950,7 @@ bool VvcHrdUnit::sublayer_hrd_parameters(int subLayerId)
             if (bit_rate_du_value_minus1 > (2 << 31) - 2)
                 return 1;
         }
-        m_reader.skipBit(); // cbr_flag
+        m_reader.skipBit();  // cbr_flag
     }
     return 0;
 }
@@ -977,11 +970,11 @@ int VvcSliceHeader::deserialize(const VvcSpsUnit* sps, const VvcPpsUnit* pps)
         if (m_reader.getBit())  // sh_picture_header_in_slice_header_flag
         {
             bool ph_gdr_or_irap_pic_flag = m_reader.getBit();
-            m_reader.skipBit(); // ph_non_ref_pic_flag
+            m_reader.skipBit();  // ph_non_ref_pic_flag
             if (ph_gdr_or_irap_pic_flag)
-                m_reader.skipBit(); // ph_gdr_pic_flag
+                m_reader.skipBit();  // ph_gdr_pic_flag
             if (m_reader.getBit())   // ph_inter_slice_allowed_flag
-                m_reader.skipBit();   // ph_intra_slice_allowed_flag
+                m_reader.skipBit();  // ph_intra_slice_allowed_flag
             unsigned ph_pps_id = extractUEGolombCode();
             if (ph_pps_id > 63)
                 return 1;

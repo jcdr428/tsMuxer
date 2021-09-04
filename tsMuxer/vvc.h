@@ -141,7 +141,7 @@ struct VvcSpsUnit : public VvcUnitWithProfile
     unsigned chroma_sample_loc_type_bottom_field;
     unsigned num_units_in_tick;
     unsigned time_scale;
-    
+
    private:
     int ref_pic_list_struct(size_t listIdx, size_t rplsIdx);
     unsigned sps_num_ref_pic_lists;
@@ -150,7 +150,6 @@ struct VvcSpsUnit : public VvcUnitWithProfile
     bool long_term_ref_pics_flag;
     bool inter_layer_prediction_enabled_flag;
     int vui_parameters();
-
 };
 
 struct VvcPpsUnit : public VvcUnit
@@ -162,7 +161,6 @@ struct VvcPpsUnit : public VvcUnit
     int pps_id;
     int sps_id;
 };
-
 
 struct VvcSliceHeader : public VvcUnit
 {

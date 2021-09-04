@@ -4,8 +4,8 @@
 #include <map>
 
 #include "abstractDemuxer.h"
-#include "vvc.h"
 #include "mpegStreamReader.h"
+#include "vvc.h"
 
 class VVCStreamReader : public MPEGStreamReader
 {
