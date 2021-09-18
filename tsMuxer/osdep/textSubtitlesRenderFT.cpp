@@ -89,14 +89,15 @@ void TextSubtitlesRenderFT::loadFontMap()
         int error = FT_New_Face(library, fileList[i].c_str(), 0, &font);
         if (error == 0)
         {
-            string fontFamily = strToLowerCase(font->family_name);
+            string fontName = strToLowerCase(font->family_name);
+            fontName.append(strToLowerCase(font->style_name));
 
-            std::map<std::string, std::string>::iterator itr = m_fontNameToFile.find(fontFamily);
+            std::map<std::string, std::string>::iterator itr = m_fontNameToFile.find(fontName);
 
             if (itr == m_fontNameToFile.end())
-                m_fontNameToFile[fontFamily] = fileList[i];
+                m_fontNameToFile[fontName] = fileList[i];
             else if (fileList[i].length() < itr->second.length())
-                m_fontNameToFile[fontFamily] = fileList[i];
+                m_fontNameToFile[fontName] = fileList[i];
 
             FT_Done_Face(font);
         }
