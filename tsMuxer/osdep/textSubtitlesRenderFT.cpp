@@ -27,10 +27,10 @@ const static char FONT_ROOT[] = "/System/Library/Fonts/";
 #include <freetype/ftstroke.h>
 #include <fs/systemlog.h>
 
-#include <filesystem>
+#include <experimental/filesystem>
 
 using namespace std;
-namespace fs = std::filesystem;
+namespace fs = std::experimental::filesystem;
 
 namespace text_subtitles
 {
