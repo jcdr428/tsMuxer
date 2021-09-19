@@ -27,6 +27,8 @@ const static char FONT_ROOT[] = "/System/Library/Fonts/";
 #include <freetype/ftstroke.h>
 #include <fs/systemlog.h>
 
+#include <experimental/filesystem>
+
 using namespace std;
 
 namespace text_subtitles
@@ -102,10 +104,9 @@ void TextSubtitlesRenderFT::loadFontMap()
             std::map<std::string, std::string>::iterator itr = m_fontNameToFile.find(fontFamily);
 
             if (itr == m_fontNameToFile.end())
-                m_fontNameToFile[fontFamily] = fileList[i];
+                m_fontNameToFile[fontFamily] = std::__fs::experimental::filesystem::canonical(fileList[i]).string();
             else if (fileList[i].length() < itr->second.length())
-                m_fontNameToFile[fontFamily] = fileList[i];
-
+                m_fontNameToFile[fontFamily] = std::__fs::experimental::filesystem::canonical(fileList[i]).string();
             FT_Done_Face(font);
         }
         // LTRACE(LT_INFO, 2, "after loading font " << fileList[i].c_str());
