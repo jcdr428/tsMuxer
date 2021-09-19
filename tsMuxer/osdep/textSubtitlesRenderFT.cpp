@@ -30,7 +30,7 @@ const static char FONT_ROOT[] = "/System/Library/Fonts/";
 #include <filesystem>
 
 using namespace std;
-namespace fs = std::filesystem;
+namespace fs = filesystem;
 
 namespace text_subtitles
 {
