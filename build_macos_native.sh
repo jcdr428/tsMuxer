@@ -7,7 +7,6 @@ export MACOSX_DEPLOYMENT_TARGET=10.15
 
 brew install pkg-config
 brew install freetype
-brew install zlib
 
 builddir=$PWD
 
@@ -15,7 +14,12 @@ mkdir build
 
 pushd build
 cmake -DCMAKE_BUILD_TYPE=Release -DTSMUXER_GUI=TRUE ..
-make -j$(sysctl -n hw.logicalcpu)
+
+if ! num_cores=$(sysctl -n hw.logicalcpu); then
+  num_cores=1
+fi
+
+make -j${num_cores}
 
 pushd tsMuxerGUI
 pushd tsMuxerGUI.app/Contents

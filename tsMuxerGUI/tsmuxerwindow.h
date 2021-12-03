@@ -3,10 +3,13 @@
 
 #include <QHeaderView>
 #include <QProcess>
-#include <QSoundEffect>
 #include <QTimer>
 #include <QTranslator>
 #include <QWidget>
+
+#if QT_MULTIMEDIA_LIB
+#include <QSoundEffect>
+#endif
 
 #include "codecinfo.h"
 
@@ -22,6 +25,7 @@ class TsMuxerWindow;
 }
 
 class QnCheckBoxedHeaderView;
+class FontSettingsTableModel;
 
 typedef QList<double> ChapterList;
 
@@ -193,9 +197,13 @@ class TsMuxerWindow : public QWidget
     void dragMoveEvent(QDragMoveEvent* event) override;
     void dragLeaveEvent(QDragLeaveEvent* event) override;
 
+#if QT_MULTIMEDIA_LIB
     QSoundEffect sound;
+#endif
     void myPlaySound(const QString& fileName);
     bool isVideoCropped();
+
+    FontSettingsTableModel* fontSettingsModel;
 };
 
 Q_DECLARE_METATYPE(ChapterList);

@@ -29,7 +29,8 @@ static const uint8_t PES_PRIVATE_DATA2 = 0xbf;
 static const uint8_t PROGRAM_STREAM_DIRECTORY = 0xff;
 
 static const uint8_t PES_AUDIO_ID = 0xc0;
-static const uint8_t PES_VIDEO_ID = 0xe1;
+static const uint8_t PES_VIDEO_ID = 0xe0;
+static const uint8_t PES_HEVC_ID = 0xe1;
 static const uint8_t PES_VC1_ID = 0xfd;
 
 static const uint8_t DVB_SUBT_DESCID = 0x59;
@@ -42,7 +43,7 @@ static const uint8_t STREAM_TYPE_VIDEO_MPEG4 = 0x10;
 static const uint8_t STREAM_TYPE_VIDEO_H264 = 0x1b;
 static const uint8_t STREAM_TYPE_VIDEO_MVC = 0x20;
 static const uint8_t STREAM_TYPE_VIDEO_H265 = 0x24;
-static const uint8_t STREAM_TYPE_VIDEO_H266 = 0x32;
+static const uint8_t STREAM_TYPE_VIDEO_H266 = 0x33;
 static const uint8_t STREAM_TYPE_VIDEO_VC1 = 0xea;
 
 static const uint8_t STREAM_TYPE_AUDIO_MPEG1 = 0x03;
